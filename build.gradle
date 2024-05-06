@@ -1,0 +1,23 @@
+/*
+ * Build requirements
+ */
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+}
+
+group = 'com.softwareag.controlplane.agent.azure'
+
+repositories {
+	mavenCentral()
+}
+subprojects { sub ->
+	repositories {
+		mavenCentral()
+	}
+}
+
+
+
+
