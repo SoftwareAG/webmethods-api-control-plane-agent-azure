@@ -4,10 +4,6 @@ This repository holds a sample stand-alone agent implementation Gradle project f
 
 1. Registering Azure API Gateway with API Control Plane.
 2. Retrieving Azure API Gateway’s health status and sending it to API Control Plane.
-3. Publishing Azure API Gateway’s assets to API Control Plane. 
-4. Synchronizing assets between Azure API Gateway and API Control Plane.
-
-Retrieving metrics from Azure API Gateway to API Control Plane.
 
 ## **Implementation overview**
 
