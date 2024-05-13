@@ -4,6 +4,8 @@ import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.apimanagement.ApiManagementManager;
 import com.azure.resourcemanager.apimanagement.models.ApiManagementServiceResource;
 import com.azure.resourcemanager.resources.ResourceManager;
+import com.softwareag.controlplane.agentsdk.api.client.ControlPlaneClient;
+import com.softwareag.controlplane.agentsdk.core.client.RestControlPlaneClient;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -47,5 +49,13 @@ public class AzureManagersHolder {
 
     public ResourceManager getAzureResourceManager() {
         return resourceManager.get();
+    }
+
+    static ThreadLocal<ControlPlaneClient> restControlPlaneClient = new InheritableThreadLocal<>();
+
+    public void setRestControlPlaneClient(ControlPlaneClient azureResourceManager) { restControlPlaneClient.set(azureResourceManager); }
+
+    public ControlPlaneClient getRestControlPlaneClient() {
+        return restControlPlaneClient.get();
     }
 }

@@ -39,7 +39,7 @@ public class AzureAgentManualContextImpl implements AgentSDKContextManual {
 
     @Override
     public List<API> getAPIs() {
-        return apiRetriever.retrieveAPIs();
+        return apiRetriever.retrieveAPIs(true);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class AzureAgentManualContextImpl implements AgentSDKContextManual {
 
     @Override
     public List<AssetSyncAction<Asset>> getAssetSyncActions(long fromTimestamp) {
-        return null;
+        return apiRetriever.getAPIUpdates(fromTimestamp);
     }
 
     @Override

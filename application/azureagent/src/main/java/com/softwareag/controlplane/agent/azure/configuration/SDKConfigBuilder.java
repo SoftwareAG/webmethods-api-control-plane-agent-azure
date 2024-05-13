@@ -6,10 +6,14 @@ import com.azure.resourcemanager.resources.models.Location;
 import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
 import com.softwareag.controlplane.agent.azure.Constants;
 import com.softwareag.controlplane.agent.azure.helpers.AzureAgentUtil;
+import com.softwareag.controlplane.agentsdk.api.client.ControlPlaneClient;
+import com.softwareag.controlplane.agentsdk.api.client.http.SdkHttpClient;
 import com.softwareag.controlplane.agentsdk.api.config.AuthConfig;
 import com.softwareag.controlplane.agentsdk.api.config.ControlPlaneConfig;
 import com.softwareag.controlplane.agentsdk.api.config.RuntimeConfig;
 import com.softwareag.controlplane.agentsdk.api.config.SdkConfig;
+import com.softwareag.controlplane.agentsdk.core.client.DefaultHttpClient;
+import com.softwareag.controlplane.agentsdk.core.client.RestControlPlaneClient;
 import com.softwareag.controlplane.agentsdk.model.AssetSyncMethod;
 import com.softwareag.controlplane.agentsdk.model.Capacity;
 import com.softwareag.controlplane.agentsdk.model.Runtime;
@@ -66,10 +70,21 @@ public class SDKConfigBuilder {
                 Runtime.DeploymentType.PUBLIC_CLOUD)
                 .region(managerHolder.getApiService().regionName())
                 .location(location.physicalLocation())
-                //.host(runtimeProperties.getHost())
+                .host(runtimeProperties.getHost())
                 .tags(AzureAgentUtil.convertTags(managerHolder.getApiService().tags()))
                 .capacity(capacity)
                 .build();
+
+        SdkHttpClient httpClient = new DefaultHttpClient.Builder()
+                    .tlsConfig(controlPlaneConfig.getTlsConfig())
+                    .connectionConfig(controlPlaneConfig.getConnectionConfig())
+                    .build();
+        ControlPlaneClient controlPlaneClient = new RestControlPlaneClient.Builder()
+                .runtimeConfig(runtimeConfig)
+                .controlPlaneConfig(controlPlaneConfig)
+                .httpClient(httpClient)
+                .build();
+        managerHolder.setRestControlPlaneClient(controlPlaneClient);
 
         return new SdkConfig.Builder(controlPlaneConfig, runtimeConfig)
                 .publishAssets(agentProperties.isPublishAssetsEnabled())
@@ -79,8 +94,7 @@ public class SDKConfigBuilder {
                 .heartbeatInterval(agentProperties.getSyncHeartbeatIntervalSeconds())
                 .assetsSyncInterval(agentProperties.getSyncAssetsIntervalSeconds())
                 .metricsSendInterval(agentProperties.getSyncMetricsIntervalSeconds())
-                .logLevel(Level.valueOf(ObjectUtils.isEmpty(agentProperties.getLogLevel()) ?
-                        "ALL" : agentProperties.getLogLevel()))
+                .logLevel(Level.ERROR)
                 .build();
     }
 

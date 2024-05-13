@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 class AzureAgentApplicationTests {
 
 
-    //@Test
+  //  @Test
     void main() {
         AzureAgentApplication.main(new String[]{});
     }
