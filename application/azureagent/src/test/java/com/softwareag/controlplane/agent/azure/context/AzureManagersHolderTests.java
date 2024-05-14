@@ -3,7 +3,9 @@ package com.softwareag.controlplane.agent.azure.context;
 import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.apimanagement.ApiManagementManager;
 import com.azure.resourcemanager.apimanagement.models.ApiManagementServiceResource;
+import com.azure.resourcemanager.resources.ResourceManager;
 import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
+import com.softwareag.controlplane.agentsdk.core.client.RestControlPlaneClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.test.context.TestPropertySource;
@@ -26,6 +28,18 @@ public class AzureManagersHolderTests {
     void apiManagerHolderTest() {
         azureManagersHolder.setAzureApiManager(Mockito.mock(ApiManagementManager.class));
         assertThat(azureManagersHolder.getAzureApiManager()).isNotNull();
+    }
+
+    @Test
+    void azureResourceManagerTest() {
+        azureManagersHolder.setAzureResourceManager(Mockito.mock(ResourceManager.class));
+        assertThat(azureManagersHolder.getAzureResourceManager()).isNotNull();
+    }
+
+    @Test
+    void restControlPlaneClientTest() {
+        azureManagersHolder.setRestControlPlaneClient(Mockito.mock(RestControlPlaneClient.class));
+        assertThat(azureManagersHolder.getRestControlPlaneClient()).isNotNull();
     }
 
     @Test

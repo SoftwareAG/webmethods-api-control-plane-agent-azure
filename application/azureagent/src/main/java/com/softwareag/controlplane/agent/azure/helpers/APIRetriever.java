@@ -3,19 +3,17 @@ package com.softwareag.controlplane.agent.azure.helpers;
 import com.azure.core.http.rest.PagedIterable;
 import com.azure.resourcemanager.apimanagement.models.ApiContract;
 import com.azure.resourcemanager.apimanagement.models.TagContract;
-import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
 import com.softwareag.controlplane.agent.azure.Constants;
 import com.softwareag.controlplane.agent.azure.configuration.AgentProperties;
 import com.softwareag.controlplane.agent.azure.configuration.AzureProperties;
+import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
 import com.softwareag.controlplane.agentsdk.api.client.SdkClientException;
 import com.softwareag.controlplane.agentsdk.core.cache.CacheManager;
-import com.softwareag.controlplane.agentsdk.core.client.RestControlPlaneClient;
 import com.softwareag.controlplane.agentsdk.model.API;
 import com.softwareag.controlplane.agentsdk.model.APISyncAction;
 import com.softwareag.controlplane.agentsdk.model.Asset;
 import com.softwareag.controlplane.agentsdk.model.AssetSyncAction;
 import com.softwareag.controlplane.agentsdk.model.AssetType;
-import com.softwareag.controlplane.agentsdk.model.Owner;
 import com.softwareag.controlplane.agentsdk.model.Status;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +49,8 @@ public class APIRetriever {
     private List<API> convertAsAPIModel(PagedIterable<ApiContract> apis, boolean toUpdateCache) {
         List<API> allAPIs = new ArrayList<>();
         for (ApiContract azureAPI : apis) {
-            String azureAPIId = azureAPI.id().substring(1);
+            String azureAPIId = azureProperties.getApiManagementServiceName()
+                    + Constants.UNDERSCORE + azureAPI.name();
             String azureAPIType = azureAPI.apiType() == null ? "REST" : azureAPI.apiType().toString().toUpperCase();
             if (validAPICreation(azureAPI, azureAPIType)) {
                 String versionSetId = azureAPI.apiVersionSetId() != null ?

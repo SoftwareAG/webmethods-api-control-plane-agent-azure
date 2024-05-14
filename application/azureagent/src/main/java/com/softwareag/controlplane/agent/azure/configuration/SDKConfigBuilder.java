@@ -3,8 +3,8 @@ package com.softwareag.controlplane.agent.azure.configuration;
 
 import com.azure.core.management.Region;
 import com.azure.resourcemanager.resources.models.Location;
-import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
 import com.softwareag.controlplane.agent.azure.Constants;
+import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
 import com.softwareag.controlplane.agent.azure.helpers.AzureAgentUtil;
 import com.softwareag.controlplane.agentsdk.api.client.ControlPlaneClient;
 import com.softwareag.controlplane.agentsdk.api.client.http.SdkHttpClient;

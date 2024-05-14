@@ -11,29 +11,32 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.Iterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@TestPropertySource(locations = "azure")
 public class HeartbeatGeneratorTests {
 
-    @Mock
-    private AzureProperties properties;
+    private AzureProperties properties = new AzureProperties();
 
 
-    @Mock
-    AzureManagersHolder azureManagersHolder;
+    AzureManagersHolder azureManagersHolder = spy(new AzureManagersHolder());
 
     private ApiContract apiContract;
 
-    @Autowired
-    HeartbeatGenerator heartbeatGenerator;
+    HeartbeatGenerator heartbeatGenerator = spy(new HeartbeatGenerator(properties, azureManagersHolder));
 
     @BeforeEach
     private void setup() {
@@ -43,9 +46,10 @@ public class HeartbeatGeneratorTests {
         properties.setTenantId("default");
         properties.setResourceGroup("azuregroup");
         properties.setApiManagementServiceName("serviceName");
+        MockitoAnnotations.openMocks(this);
     }
 
-    //@Test
+    @Test
     void generateValidHeartBeat() {
         when(azureManagersHolder.getAzureApiManager()).thenReturn(Mockito.mock(ApiManagementManager.class));
         when(azureManagersHolder.getAzureApiManager().apis()).thenReturn(Mockito.mock(Apis.class));
@@ -54,9 +58,10 @@ public class HeartbeatGeneratorTests {
         when(mockIterator.hasNext()).thenReturn(true, false);
         when(mockIterator.next()).thenReturn(apiContract);
         PagedIterable mockPagedTableEntities = Mockito.mock(PagedIterable.class);
-        when(azureManagersHolder.getAzureApiManager().apis().listByService(anyString(), anyString())).thenReturn(mockPagedTableEntities);
+        when(azureManagersHolder.getAzureApiManager().apis()
+                .listByService(anyString(), anyString())).thenReturn(mockPagedTableEntities);
         Heartbeat heartbeat = heartbeatGenerator.generateHeartBeat("arajgw");
-//        verify(heartbeatGenerator, times(1)).generateHeartBeat("arajgw");
+        verify(heartbeatGenerator, times(1)).generateHeartBeat("arajgw");
         assertEquals(heartbeatGenerator.generateHeartBeat("arajgw").getRuntimeId(), heartbeat.getRuntimeId());
     }
 }

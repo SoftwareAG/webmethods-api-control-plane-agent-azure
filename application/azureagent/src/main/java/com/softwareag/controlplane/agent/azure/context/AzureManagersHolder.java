@@ -5,7 +5,6 @@ import com.azure.resourcemanager.apimanagement.ApiManagementManager;
 import com.azure.resourcemanager.apimanagement.models.ApiManagementServiceResource;
 import com.azure.resourcemanager.resources.ResourceManager;
 import com.softwareag.controlplane.agentsdk.api.client.ControlPlaneClient;
-import com.softwareag.controlplane.agentsdk.core.client.RestControlPlaneClient;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
