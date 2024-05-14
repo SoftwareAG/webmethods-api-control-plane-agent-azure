@@ -9,9 +9,11 @@ import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
 import com.softwareag.controlplane.agentsdk.model.Heartbeat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -29,24 +31,27 @@ import static org.mockito.Mockito.when;
 @TestPropertySource(locations = "azure")
 public class HeartbeatGeneratorTests {
 
+    @Spy
     private AzureProperties properties = new AzureProperties();
 
 
+    @Spy
     AzureManagersHolder azureManagersHolder = spy(new AzureManagersHolder());
 
     private ApiContract apiContract;
 
-    HeartbeatGenerator heartbeatGenerator = spy(new HeartbeatGenerator(properties, azureManagersHolder));
+    @InjectMocks
+    HeartbeatGenerator heartbeatGenerator;
 
     @BeforeEach
     private void setup() {
+        MockitoAnnotations.openMocks(this);
         properties.setClientId("abc");
         properties.setClientSecret("ghj");
         properties.setSubscriptionId("qwerty");
         properties.setTenantId("default");
         properties.setResourceGroup("azuregroup");
         properties.setApiManagementServiceName("serviceName");
-        MockitoAnnotations.openMocks(this);
     }
 
     @Test
@@ -61,7 +66,7 @@ public class HeartbeatGeneratorTests {
         when(azureManagersHolder.getAzureApiManager().apis()
                 .listByService(anyString(), anyString())).thenReturn(mockPagedTableEntities);
         Heartbeat heartbeat = heartbeatGenerator.generateHeartBeat("arajgw");
-        verify(heartbeatGenerator, times(1)).generateHeartBeat("arajgw");
-        assertEquals(heartbeatGenerator.generateHeartBeat("arajgw").getRuntimeId(), heartbeat.getRuntimeId());
+        assertEquals("arajgw", heartbeat.getRuntimeId());
+        assertEquals(heartbeat.getActive(), 0);
     }
 }

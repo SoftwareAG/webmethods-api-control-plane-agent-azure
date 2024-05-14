@@ -61,7 +61,6 @@ class AzureAgentApplicationTests {
 
   //  @Test
     void main() {
-        doNothing().when(Mockito.mock(AzureAuthentication.class)).initializeAzureManagers(any(),any());
         SpringApplication.run(AzureAgentApplication.class, new String[]{});
     }
 

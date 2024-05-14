@@ -15,8 +15,11 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -29,19 +32,25 @@ import static org.mockito.Mockito.when;
 public class SDKConfigBuilderTests {
 
     @Valid
+    @Spy
     private AgentProperties agentProperties = new AgentProperties();
 
     @Valid
+    @Spy
     private RuntimeProperties runtimeProperties = new RuntimeProperties();
     @Valid
+    @Spy
     private AzureProperties azureProperties = new AzureProperties();
 
+    @Spy
     private AzureManagersHolder azureManagersHolder = spy(new AzureManagersHolder());
 
+    @InjectMocks
     SDKConfigBuilder sdkConfigBuilder;
 
     @BeforeEach
     public void setup() {
+        MockitoAnnotations.openMocks(this);
         //agent properties
         agentProperties.setPassword("manage");
         agentProperties.setUrl("http://test:8888");
@@ -66,8 +75,9 @@ public class SDKConfigBuilderTests {
         azureProperties.setResourceGroup("azuregroup");
         azureProperties.setApiManagementServiceName("serviceName");
 
-        sdkConfigBuilder = new SDKConfigBuilder(agentProperties, runtimeProperties, azureProperties,
-                azureManagersHolder);
+//        sdkConfigBuilder = new SDKConfigBuilder(agentProperties, runtimeProperties, azureProperties,
+//                azureManagersHolder);
+     //   sdkConfigBuilder = new SDKConfigBuilder();
 
     }
 

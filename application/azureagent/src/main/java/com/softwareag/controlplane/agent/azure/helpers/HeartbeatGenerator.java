@@ -5,6 +5,7 @@ import com.azure.resourcemanager.apimanagement.models.ApiContract;
 import com.softwareag.controlplane.agent.azure.configuration.AzureProperties;
 import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
 import com.softwareag.controlplane.agentsdk.model.Heartbeat;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -12,14 +13,11 @@ import java.util.Date;
 @Component
 public class HeartbeatGenerator {
 
-    private final AzureProperties azureProperties;
+    @Autowired
+    private AzureProperties azureProperties;
 
-    private final AzureManagersHolder azureManagersHolder;
-
-    public HeartbeatGenerator(AzureProperties azureProperties, AzureManagersHolder azureManagersHolder) {
-        this.azureProperties = azureProperties;
-        this.azureManagersHolder = azureManagersHolder;
-    }
+    @Autowired
+    private AzureManagersHolder azureManagersHolder;
 
     public Heartbeat generateHeartBeat(String runtimeId) {
         Heartbeat heartbeat = new Heartbeat.Builder(runtimeId).build();

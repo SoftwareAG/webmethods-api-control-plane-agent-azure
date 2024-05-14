@@ -33,7 +33,7 @@ public class AzureAuthentication implements ApplicationListener<ApplicationReady
     AzureManagersHolder managerHolder;
 
 
-    public void authenticate() {
+    private void authenticate() {
         AzureProfile profile = new AzureProfile(
                 azureProperties.getTenantId(),
                 azureProperties.getSubscriptionId(), AzureEnvironment.AZURE);
@@ -46,13 +46,18 @@ public class AzureAuthentication implements ApplicationListener<ApplicationReady
 
         initializeAzureManagers(clientSecretCredential, profile);
     }
-    public void initializeAzureManagers(ClientSecretCredential clientSecretCredential, AzureProfile profile) {
+    private void initializeAzureManagers(ClientSecretCredential clientSecretCredential, AzureProfile profile) {
         ApiManagementManager apiManager = ApiManagementManager
                 .authenticate(clientSecretCredential, profile);
+
+        if(apiManager == null) {
+        throw  new RuntimeException("API management service doesn't exist");
+        }
+
         ApiManagementServiceResource apiService = apiManager.apiManagementServices()
                 .getByResourceGroup(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName());
 
-        if(apiManager == null || apiService == null) {
+        if(apiService == null) {
             int exitCode = SpringApplication.exit(context, () -> 0);
             System.exit(exitCode);
         }

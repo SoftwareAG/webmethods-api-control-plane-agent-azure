@@ -20,6 +20,7 @@ import com.softwareag.controlplane.agentsdk.model.Runtime;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.Level;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -28,21 +29,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class SDKConfigBuilder {
     @Valid
-    private final AgentProperties agentProperties;
+    @Autowired
+    private AgentProperties agentProperties;
 
     @Valid
-    private final RuntimeProperties runtimeProperties;
+    @Autowired
+    private RuntimeProperties runtimeProperties;
     @Valid
-    private final AzureProperties azureProperties;
+    @Autowired
+    private  AzureProperties azureProperties;
 
-    private final AzureManagersHolder managerHolder;
-
-    public SDKConfigBuilder(AgentProperties agentProperties, RuntimeProperties runtimeProperties, AzureProperties azureProperties, AzureManagersHolder managerHolder) {
-        this.agentProperties = agentProperties;
-        this.runtimeProperties = runtimeProperties;
-        this.azureProperties = azureProperties;
-        this.managerHolder = managerHolder;
-    }
+    @Autowired
+    private AzureManagersHolder managerHolder;
 
     public SdkConfig sdkConfig() {
         Location location = managerHolder.getAzureResourceManager().subscriptions()
