@@ -3,6 +3,7 @@ package com.softwareag.controlplane.agent.azure.helpers;
 
 import com.softwareag.controlplane.agent.azure.Constants;
 import com.softwareag.controlplane.agentsdk.model.Owner;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -14,7 +15,9 @@ import java.util.Set;
 public class AzureAgentUtil {
     public static Set<String> convertTags(Map<String,String> azureTags) {
         Set<String> tags = new HashSet<>();
-        azureTags.keySet().forEach(key -> tags.add(key + Constants.COLON + azureTags.get(key)));
+        if(ObjectUtils.isNotEmpty(azureTags)) {
+            azureTags.keySet().forEach(key -> tags.add(key + Constants.COLON + azureTags.get(key)));
+        }
         return tags;
     }
 
