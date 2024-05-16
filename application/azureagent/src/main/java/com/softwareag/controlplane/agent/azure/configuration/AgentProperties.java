@@ -28,4 +28,13 @@ public class AgentProperties {
     private String password;
 
     private String logLevel;
+    private boolean sslEnabled;
+    private String trustStorePath;
+    private String trustStorePassword;
+    private String trustStoreType;
+    private String keyStorePath;
+    private String keyStorePassword;
+    private String keyStoreType;
+    private String keyAlias;
+    private String keyPassword;
 }
