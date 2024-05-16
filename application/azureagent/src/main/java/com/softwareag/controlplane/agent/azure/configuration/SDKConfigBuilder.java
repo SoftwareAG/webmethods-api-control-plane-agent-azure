@@ -12,6 +12,7 @@ import com.softwareag.controlplane.agentsdk.api.config.AuthConfig;
 import com.softwareag.controlplane.agentsdk.api.config.ControlPlaneConfig;
 import com.softwareag.controlplane.agentsdk.api.config.RuntimeConfig;
 import com.softwareag.controlplane.agentsdk.api.config.SdkConfig;
+import com.softwareag.controlplane.agentsdk.api.config.TlsConfig;
 import com.softwareag.controlplane.agentsdk.core.client.DefaultHttpClient;
 import com.softwareag.controlplane.agentsdk.core.client.RestControlPlaneClient;
 import com.softwareag.controlplane.agentsdk.model.AssetSyncMethod;
@@ -43,6 +44,16 @@ public class SDKConfigBuilder {
     private AzureManagersHolder managerHolder;
 
     public SdkConfig sdkConfig() {
+        TlsConfig tlsConfig = new TlsConfig
+                .Builder(agentProperties.getTrustStorePath(), agentProperties.getTrustStoreType())
+                .truststorePassword(agentProperties.getTrustStorePassword())
+                .keystorePath(!agentProperties.getKeyStorePath().isEmpty() ? agentProperties.getKeyStorePath() : null)
+                .keystorePassword(!agentProperties.getKeyStorePassword().isEmpty() ? agentProperties.getKeyStorePassword() : null)
+                .keyAlias(!agentProperties.getKeyAlias().isEmpty() ? agentProperties.getKeyAlias() : null)
+                .keyPassword(!agentProperties.getKeyPassword().isEmpty() ? agentProperties.getKeyPassword() : null)
+                .keystoreType(!agentProperties.getKeyStoreType().isEmpty() ? agentProperties.getKeyStoreType() : null)
+                .build();
+
         Location location = managerHolder.getAzureResourceManager().subscriptions()
                 .getById(azureProperties.getSubscriptionId())
                 .getLocationByRegion(Region.fromName(managerHolder.getApiService().regionName()));
@@ -52,6 +63,7 @@ public class SDKConfigBuilder {
         ControlPlaneConfig controlPlaneConfig = new ControlPlaneConfig.Builder()
                 .url(agentProperties.getUrl())
                 .authConfig(authConfig)
+                .tlsConfig(agentProperties.isSslEnabled() && !agentProperties.getTrustStorePath().isEmpty() && !agentProperties.getTrustStorePassword().isEmpty() ? tlsConfig : null)
                 .build();
 
         Capacity capacity = null;
