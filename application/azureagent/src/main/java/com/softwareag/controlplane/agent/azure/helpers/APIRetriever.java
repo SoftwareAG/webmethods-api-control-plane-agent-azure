@@ -58,7 +58,7 @@ public class APIRetriever {
                 API api = (API) new API.Builder(azureAPIId, API.Type.valueOf(azureAPIType))
                         .version(azureAPI.apiVersion())
                         .versionSetId(versionSetId)
-                        .runtimeAPIId(azureAPI.id())
+                    //    .runtimeAPIId(azureAPI.id())
                         .status(Status.ACTIVE)
                         .owner(AzureAgentUtil.getOwnerInfo(agentProperties.getUsername()))
                         .tags(getAPITags(azureAPI.name()))
