@@ -49,8 +49,8 @@ public class APIRetriever {
     private List<API> convertAsAPIModel(PagedIterable<ApiContract> apis, boolean toUpdateCache) {
         List<API> allAPIs = new ArrayList<>();
         for (ApiContract azureAPI : apis) {
-            String azureAPIId = azureProperties.getApiManagementServiceName()
-                    + Constants.UNDERSCORE + azureAPI.name();
+            String azureAPIId = AzureAgentUtil.constructAPIId(azureAPI.name(),
+                    azureProperties.getTenantId(), azureProperties.getApiManagementServiceName());
             String azureAPIType = azureAPI.apiType() == null ? "REST" : azureAPI.apiType().toString().toUpperCase();
             if (validAPICreation(azureAPI, azureAPIType)) {
                 String versionSetId = azureAPI.apiVersionSetId() != null ?
@@ -58,11 +58,12 @@ public class APIRetriever {
                 API api = (API) new API.Builder(azureAPIId, API.Type.valueOf(azureAPIType))
                         .version(azureAPI.apiVersion())
                         .versionSetId(versionSetId)
+                        .runtimeAPIId(azureAPI.id())
                         .status(Status.ACTIVE)
                         .owner(AzureAgentUtil.getOwnerInfo(agentProperties.getUsername()))
                         .tags(getAPITags(azureAPI.name()))
                         .description(azureAPI.description())
-                        .name(azureAPI.name())
+                        .name(azureAPI.displayName())
                         .build();
                 allAPIs.add(api);
                 if(toUpdateCache) CacheManager.getInstance().put(AssetType.API, azureAPIId, api);
@@ -82,7 +83,6 @@ public class APIRetriever {
         List<String> enumNames = Stream.of(API.Type.values())
                 .map(Enum::name)
                 .collect(Collectors.toList());
-        enumNames.remove(Constants.GRAPHQL);
         return ObjectUtils.isNotEmpty(azureAPI.isCurrent()) && azureAPI.isCurrent()
                 && enumNames.contains(azureAPIType);
     }

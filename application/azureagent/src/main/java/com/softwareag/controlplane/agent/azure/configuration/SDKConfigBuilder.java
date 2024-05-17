@@ -47,11 +47,13 @@ public class SDKConfigBuilder {
         TlsConfig tlsConfig = new TlsConfig
                 .Builder(agentProperties.getTrustStorePath(), agentProperties.getTrustStoreType())
                 .truststorePassword(agentProperties.getTrustStorePassword())
-                .keystorePath(!agentProperties.getKeyStorePath().isEmpty() ? agentProperties.getKeyStorePath() : null)
-                .keystorePassword(!agentProperties.getKeyStorePassword().isEmpty() ? agentProperties.getKeyStorePassword() : null)
-                .keyAlias(!agentProperties.getKeyAlias().isEmpty() ? agentProperties.getKeyAlias() : null)
-                .keyPassword(!agentProperties.getKeyPassword().isEmpty() ? agentProperties.getKeyPassword() : null)
-                .keystoreType(!agentProperties.getKeyStoreType().isEmpty() ? agentProperties.getKeyStoreType() : null)
+                .keystorePath(!ObjectUtils.isEmpty(agentProperties.getKeyStorePath()) ?
+                        agentProperties.getKeyStorePath() : null)
+                .keystorePassword(!ObjectUtils.isEmpty(agentProperties.getKeyStorePassword()) ?
+                        agentProperties.getKeyStorePassword() : null)
+                .keyAlias(!ObjectUtils.isEmpty(agentProperties.getKeyAlias()) ? agentProperties.getKeyAlias() : null)
+                .keyPassword(!ObjectUtils.isEmpty(agentProperties.getKeyPassword()) ? agentProperties.getKeyPassword() : null)
+                .keystoreType(!ObjectUtils.isEmpty(agentProperties.getKeyStoreType()) ? agentProperties.getKeyStoreType() : null)
                 .build();
 
         Location location = managerHolder.getAzureResourceManager().subscriptions()

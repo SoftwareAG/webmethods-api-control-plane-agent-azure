@@ -34,4 +34,10 @@ public class AzureAgentUtil {
         owner.setName(userName);
         return owner;
     }
+
+
+    public static String constructAPIId(String apiName, String tenantId, String runtimeName) {
+       return tenantId + Constants.UNDERSCORE + runtimeName
+                + Constants.UNDERSCORE + apiName;
+    }
 }
