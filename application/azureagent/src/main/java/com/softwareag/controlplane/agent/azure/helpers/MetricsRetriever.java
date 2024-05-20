@@ -48,9 +48,17 @@ public class MetricsRetriever {
         Map<String, List<RequestReportRecordContract>> statusCodeMapAzure = new HashMap<>();
         Map<String, Map<String, List<RequestReportRecordContract>>> statusCodeByApiAzure = new HashMap<>();
         azureMetricsByRequests.forEach(met -> {
+            String responseCode = null;
+            if(met.responseCode() >= 200 && met.responseCode() < 300) {
+                responseCode = "2xx";
+            } else if(met.responseCode() >= 300 && met.responseCode() < 400) {
+                responseCode = "3xx";
+            } else if(met.responseCode() >= 400 && met.responseCode() < 500) {
+                responseCode = "4xx";
+            }
             // first map one with status code,list<report>
             List<RequestReportRecordContract> requestReportRecordContracts =
-                    statusCodeMapAzure.get(met.responseCode().toString());
+                    statusCodeMapAzure.get(responseCode);
             if (requestReportRecordContracts == null) {
                 requestReportRecordContracts = new ArrayList<>();
                 requestReportRecordContracts.add(met);
@@ -58,7 +66,7 @@ public class MetricsRetriever {
                 requestReportRecordContracts.add(met);
             }
 
-            statusCodeMapAzure.put(met.responseCode().toString(), requestReportRecordContracts);
+            statusCodeMapAzure.put(responseCode, requestReportRecordContracts);
 
             //second map with api-id, list<report>
             Map<String, List<RequestReportRecordContract>> requestRecordContractsByApi =
@@ -68,7 +76,7 @@ public class MetricsRetriever {
             if (requestRecordContractsByApi == null) {
                 requestRecordContractsByApi = new HashMap<>();
                 List<RequestReportRecordContract> apiRecordBycode =
-                        requestRecordContractsByApi.get(met.responseCode().toString());
+                        requestRecordContractsByApi.get(responseCode);
                 if (apiRecordBycode == null) {
                     apiRecordBycode = new ArrayList<>();
                     apiRecordBycode.add(met);
@@ -78,14 +86,14 @@ public class MetricsRetriever {
                 requestRecordContractsByApi.put(met.responseCode().toString(), apiRecordBycode);
             } else {
                 List<RequestReportRecordContract> apiRecordBycode =
-                        requestRecordContractsByApi.get(met.responseCode().toString());
+                        requestRecordContractsByApi.get(responseCode);
                 if (apiRecordBycode == null) {
                     apiRecordBycode = new ArrayList<>();
                     apiRecordBycode.add(met);
                 } else {
                     apiRecordBycode.add(met);
                 }
-                requestRecordContractsByApi.put(met.responseCode().toString(), apiRecordBycode);
+                requestRecordContractsByApi.put(responseCode, apiRecordBycode);
             }
 
             statusCodeByApiAzure.put(AzureAgentUtil.constructAPIId(met.apiId().substring(6),
@@ -127,8 +135,8 @@ public class MetricsRetriever {
 
             RuntimeTransactionMetrics transactionMetrics = (RuntimeTransactionMetrics) new RuntimeTransactionMetrics
                     .Builder(apiMetrics)
-                    .metricsByStatusCode(new HashMap<>())
-              //      .metricsByStatusCode(metricsByStatusCode)
+                //    .metricsByStatusCode(new HashMap<>())
+                    .metricsByStatusCode(metricsByStatusCode)
                     .build();
             return transactionMetrics;
         }
@@ -190,8 +198,8 @@ public class MetricsRetriever {
                         .Builder(apiMetrics, AzureAgentUtil.constructAPIId(metricByApi.apiId().substring(6),
                         azureProperties.getTenantId(), azureProperties.getApiManagementServiceName()), metricByApi.name(),
                         apiVersionContract.apiVersion() ==  null ? "" : apiVersionContract.apiVersion())
-                        .metricsByStatusCode(new HashMap<>())
-                  //      .metricsByStatusCode(metricsByStatusCode)
+                    //    .metricsByStatusCode(new HashMap<>())
+                       .metricsByStatusCode(metricsByStatusCode)
                         .build();
                 apiTransMetricsList.add(apiTransMetrics);
             }
