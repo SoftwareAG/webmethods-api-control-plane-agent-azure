@@ -55,10 +55,15 @@ public class APIRetriever {
         List<API> allAPIs = new ArrayList<>();
         if(ObjectUtils.isEmpty(apis)) return allAPIs;
 
+        PolicyCollection productPolicies = azureManagersHolder.getAzureApiManager().productPolicies().listByProduct(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), "unlimited");
+        int productPolicyCount = parsePolicies(productPolicies);
+        PolicyCollection globalPolicy =azureManagersHolder.getAzureApiManager().policies().listByService(azureProperties.getResourceGroup(),azureProperties.getApiManagementServiceName());
+        int globalPolicyCount = parsePolicies(globalPolicy);
+
         apis.stream().forEach(azureAPI -> {
             String azureAPIId = AzureAgentUtil.constructAPIId(azureAPI.name(),
                     azureProperties.getTenantId(), azureProperties.getApiManagementServiceName());
-
+            int policyCount=getPoliciesCount(azureAPI.name())+productPolicyCount+globalPolicyCount;
             // Azure apiType has values such as SOAP, GRAPHQL , for REST values left to be empty
             String azureAPIType = azureAPI.apiType() == null ? "REST" : azureAPI.apiType().toString().toUpperCase();
             if (validAPICreation(azureAPI, azureAPIType)) {
@@ -69,6 +74,7 @@ public class APIRetriever {
                         .versionSetId(versionSetId)
                         .runtimeAPIId(azureAPI.id())
                         .status(Status.ACTIVE)
+                        .policiesCount(policyCount)
                         .owner(AzureAgentUtil.getOwnerInfo(agentProperties.getUsername()))
                         .tags(getAPITags(azureAPI.name()))
                         .description(azureAPI.description())
