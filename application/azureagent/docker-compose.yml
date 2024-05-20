@@ -1,7 +1,0 @@
-version: '3.8'
-services:
-  azureagent:
-    build: .
-    image: "azure-agent:v1"
-    hostname: azureagent
-    environment:

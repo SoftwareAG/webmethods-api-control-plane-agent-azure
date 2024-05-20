@@ -1,6 +1,7 @@
 package com.softwareag.controlplane.agent.azure.helpers;
 
 import com.azure.core.http.rest.PagedIterable;
+import com.azure.resourcemanager.apimanagement.models.ApiContract;
 import com.azure.resourcemanager.apimanagement.models.ReportRecordContract;
 import com.azure.resourcemanager.apimanagement.models.RequestReportRecordContract;
 import com.softwareag.controlplane.agent.azure.Constants;
@@ -15,9 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,9 +48,17 @@ public class MetricsRetriever {
         Map<String, List<RequestReportRecordContract>> statusCodeMapAzure = new HashMap<>();
         Map<String, Map<String, List<RequestReportRecordContract>>> statusCodeByApiAzure = new HashMap<>();
         azureMetricsByRequests.forEach(met -> {
+            String responseCode = null;
+            if(met.responseCode() >= 200 && met.responseCode() < 300) {
+                responseCode = "2xx";
+            } else if(met.responseCode() >= 300 && met.responseCode() < 400) {
+                responseCode = "3xx";
+            } else if(met.responseCode() >= 400 && met.responseCode() < 500) {
+                responseCode = "4xx";
+            }
             // first map one with status code,list<report>
             List<RequestReportRecordContract> requestReportRecordContracts =
-                    statusCodeMapAzure.get(met.responseCode().toString());
+                    statusCodeMapAzure.get(responseCode);
             if (requestReportRecordContracts == null) {
                 requestReportRecordContracts = new ArrayList<>();
                 requestReportRecordContracts.add(met);
@@ -60,16 +66,17 @@ public class MetricsRetriever {
                 requestReportRecordContracts.add(met);
             }
 
-            statusCodeMapAzure.put(met.responseCode().toString(), requestReportRecordContracts);
+            statusCodeMapAzure.put(responseCode, requestReportRecordContracts);
 
             //second map with api-id, list<report>
             Map<String, List<RequestReportRecordContract>> requestRecordContractsByApi =
-                    statusCodeByApiAzure.get(met.apiId());
+                    statusCodeByApiAzure.get(AzureAgentUtil.constructAPIId(met.apiId().substring(6),
+                            azureProperties.getTenantId(), azureProperties.getApiManagementServiceName()));
 
             if (requestRecordContractsByApi == null) {
                 requestRecordContractsByApi = new HashMap<>();
                 List<RequestReportRecordContract> apiRecordBycode =
-                        requestRecordContractsByApi.get(met.responseCode().toString());
+                        requestRecordContractsByApi.get(responseCode);
                 if (apiRecordBycode == null) {
                     apiRecordBycode = new ArrayList<>();
                     apiRecordBycode.add(met);
@@ -79,17 +86,19 @@ public class MetricsRetriever {
                 requestRecordContractsByApi.put(met.responseCode().toString(), apiRecordBycode);
             } else {
                 List<RequestReportRecordContract> apiRecordBycode =
-                        requestRecordContractsByApi.get(met.responseCode().toString());
+                        requestRecordContractsByApi.get(responseCode);
                 if (apiRecordBycode == null) {
                     apiRecordBycode = new ArrayList<>();
                     apiRecordBycode.add(met);
                 } else {
                     apiRecordBycode.add(met);
                 }
-                requestRecordContractsByApi.put(met.responseCode().toString(), apiRecordBycode);
+                requestRecordContractsByApi.put(responseCode, apiRecordBycode);
             }
 
-            statusCodeByApiAzure.put(met.apiId(), requestRecordContractsByApi);
+            statusCodeByApiAzure.put(AzureAgentUtil.constructAPIId(met.apiId().substring(6),
+                            azureProperties.getTenantId(), azureProperties.getApiManagementServiceName()),
+                    requestRecordContractsByApi);
         });
         RuntimeTransactionMetrics runtimeTransactionMetrics = convertAsRuntimeMetrics(azureMetricsByTime,
                 statusCodeMapAzure);
@@ -102,7 +111,6 @@ public class MetricsRetriever {
         metrics.add(convertAsMetrics(runtimeTransactionMetrics, apiTransactionMetrics, toTimestamp));
         return metrics;
     }
-
 
     private RuntimeTransactionMetrics convertAsRuntimeMetrics(PagedIterable<ReportRecordContract> metricsByTime, Map<String,
             List<RequestReportRecordContract>> statusCodeMapAzure) {
@@ -127,6 +135,7 @@ public class MetricsRetriever {
 
             RuntimeTransactionMetrics transactionMetrics = (RuntimeTransactionMetrics) new RuntimeTransactionMetrics
                     .Builder(apiMetrics)
+                //    .metricsByStatusCode(new HashMap<>())
                     .metricsByStatusCode(metricsByStatusCode)
                     .build();
             return transactionMetrics;
@@ -163,7 +172,9 @@ public class MetricsRetriever {
 
             Map<String, APIMetrics> metricsByStatusCode = new HashMap<>();
 
-            Map<String, List<RequestReportRecordContract>> contractList = statusCodeByApiAzure.get(metricByApi.apiId());
+            Map<String, List<RequestReportRecordContract>> contractList =
+                    statusCodeByApiAzure.get(AzureAgentUtil.constructAPIId(metricByApi.apiId().substring(6),
+                            azureProperties.getTenantId(), azureProperties.getApiManagementServiceName()));
 
             if (contractList != null) {
                 contractList.keySet().forEach(code -> {
@@ -179,9 +190,16 @@ public class MetricsRetriever {
                             serviceTime / contracts.size()));
                 });
 
+                ApiContract apiVersionContract =
+                        azureManagersHolder.getAzureApiManager().apis().get(azureProperties.getResourceGroup(),
+                                azureProperties.getApiManagementServiceName(),
+                                metricByApi.apiId().substring(6));
                 APITransactionMetrics apiTransMetrics = (APITransactionMetrics) new APITransactionMetrics
-                        .Builder(apiMetrics, metricByApi.apiId(), metricByApi.name(), "")
-                        .metricsByStatusCode(metricsByStatusCode)
+                        .Builder(apiMetrics, AzureAgentUtil.constructAPIId(metricByApi.apiId().substring(6),
+                        azureProperties.getTenantId(), azureProperties.getApiManagementServiceName()), metricByApi.name(),
+                        apiVersionContract.apiVersion() ==  null ? "" : apiVersionContract.apiVersion())
+                    //    .metricsByStatusCode(new HashMap<>())
+                       .metricsByStatusCode(metricsByStatusCode)
                         .build();
                 apiTransMetricsList.add(apiTransMetrics);
             }

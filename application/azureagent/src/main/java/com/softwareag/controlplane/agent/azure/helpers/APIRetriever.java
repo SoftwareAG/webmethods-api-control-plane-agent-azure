@@ -53,38 +53,43 @@ public class APIRetriever {
 
     private List<API> convertAsAPIModel(PagedIterable<ApiContract> apis, boolean toUpdateCache) {
         List<API> allAPIs = new ArrayList<>();
-        PolicyCollection productPolicies = azureManagersHolder.getAzureApiManager().productPolicies().listByProduct(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), "unlimited");
-        int productPolicyCount = parsePolicies(productPolicies);
-        PolicyCollection globalPolicy =azureManagersHolder.getAzureApiManager().policies().listByService(azureProperties.getResourceGroup(),azureProperties.getApiManagementServiceName());
-        int globalPolicyCount = parsePolicies(globalPolicy);
-        for (ApiContract azureAPI : apis) {
-            String azureAPIId = azureProperties.getApiManagementServiceName()
-                    + Constants.UNDERSCORE + azureAPI.name();
+        if(ObjectUtils.isEmpty(apis)) return allAPIs;
+
+        apis.stream().forEach(azureAPI -> {
+            String azureAPIId = AzureAgentUtil.constructAPIId(azureAPI.name(),
+                    azureProperties.getTenantId(), azureProperties.getApiManagementServiceName());
+
+            // Azure apiType has values such as SOAP, GRAPHQL , for REST values left to be empty
             String azureAPIType = azureAPI.apiType() == null ? "REST" : azureAPI.apiType().toString().toUpperCase();
-            int policyCount=getPoliciesCount(azureAPI.name())+productPolicyCount+globalPolicyCount;
             if (validAPICreation(azureAPI, azureAPIType)) {
                 String versionSetId = azureAPI.apiVersionSetId() != null ?
                         azureAPI.apiVersionSetId() : null;
                 API api = (API) new API.Builder(azureAPIId, API.Type.valueOf(azureAPIType))
                         .version(azureAPI.apiVersion())
                         .versionSetId(versionSetId)
+                        .runtimeAPIId(azureAPI.id())
                         .status(Status.ACTIVE)
-                        .policiesCount(policyCount)
                         .owner(AzureAgentUtil.getOwnerInfo(agentProperties.getUsername()))
                         .tags(getAPITags(azureAPI.name()))
                         .description(azureAPI.description())
-                        .name(azureAPI.name())
+                        .name(azureAPI.displayName())
                         .build();
                 allAPIs.add(api);
-                if(toUpdateCache) CacheManager.getInstance().put(AssetType.API, azureAPIId, api);
+
+                if (toUpdateCache) CacheManager.getInstance().put(AssetType.API, azureAPIId, api);
             }
-        }
+        });
+
         return allAPIs;
     }
 
     private Set<String> getAPITags(String name) {
-        Set<String> tags = azureManagersHolder.getAzureApiManager().tags().listByApi(azureProperties.getResourceGroup(),
-                        azureProperties.getApiManagementServiceName(), name).stream()
+        PagedIterable<TagContract> tagContracts =
+                azureManagersHolder.getAzureApiManager().tags().listByApi(azureProperties.getResourceGroup(),
+                azureProperties.getApiManagementServiceName(), name);
+        
+        if(tagContracts == null) return null;
+        Set<String> tags = tagContracts.stream()
                 .map(TagContract::displayName).collect(Collectors.toSet());
         return tags;
     }
@@ -120,14 +125,14 @@ public class APIRetriever {
         List<String> enumNames = Stream.of(API.Type.values())
                 .map(Enum::name)
                 .collect(Collectors.toList());
-        enumNames.remove(Constants.GRAPHQL);
+        // Control-plane doesn't support revision concept. So only current revision apis from Azure are published.
         return ObjectUtils.isNotEmpty(azureAPI.isCurrent()) && azureAPI.isCurrent()
                 && enumNames.contains(azureAPIType);
     }
 
     public List<AssetSyncAction<Asset>> getAPIUpdates(long fromTimestamp) {
         List<AssetSyncAction<Asset>> assetSyncActions = new ArrayList<>();
-        // API loaded from Control Plane into cache
+        // API loaded from Control Plane into cache, in case of agent re-start/down time handling
         List<API> allAPIs = retrieveAPIs(false);
         populateAPICache();
         for (API api : allAPIs) {

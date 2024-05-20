@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  azureagent:
+    build: .
+    image: "az-agent-17-05-v1:latest"
+    hostname: azureagent
+    environment:
+      - azure.subscription-id=
+      - azure.resource-group=
+      - azure.tenant-id=
+      - azure.client-id=
+      - azure.client-secret=
+      - azure.api-management-service-name=
+      - apicp.url=
+      - apicp.username=
+      - apicp.password=
+      - apicp.authenticate.token=
+      - apicp.sync-heartbeat-interval-seconds=30
+      - apicp.publish-assets-enabled=true
+      - apicp.sync-metrics-enabled=false
+      - apicp.sync-metrics-interval-seconds=900
+      - apicp.sync-assets-enabled=true
+      - apicp.sync-assets-interval-seconds=120
+      - apicp.runtime.capacity-value=500000
+      - apicp.runtime.capacity-unit=per_week
+      - apicp.runtime.host=https://azure.portal
+      - apicp.runtime.type=azure
+      - apicp.log-level=ERROR
