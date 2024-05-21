@@ -22,10 +22,10 @@ public class AgentProperties {
     private int syncAssetsIntervalSeconds;
     @NotBlank
     private String url;
-    @NotBlank
+
     private String username;
-    @NotBlank
     private String password;
+    private String token;
 
     private String logLevel;
     private boolean sslEnabled;

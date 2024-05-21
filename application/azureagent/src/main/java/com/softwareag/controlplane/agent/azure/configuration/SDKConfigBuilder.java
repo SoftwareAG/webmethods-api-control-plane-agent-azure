@@ -47,21 +47,30 @@ public class SDKConfigBuilder {
         TlsConfig tlsConfig = new TlsConfig
                 .Builder(agentProperties.getTrustStorePath(), agentProperties.getTrustStoreType())
                 .truststorePassword(agentProperties.getTrustStorePassword())
-                .keystorePath(!ObjectUtils.isEmpty(agentProperties.getKeyStorePath()) ?
+                .keystorePath(ObjectUtils.isNotEmpty(agentProperties.getKeyStorePath()) ?
                         agentProperties.getKeyStorePath() : null)
-                .keystorePassword(!ObjectUtils.isEmpty(agentProperties.getKeyStorePassword()) ?
+                .keystorePassword(ObjectUtils.isNotEmpty(agentProperties.getKeyStorePassword()) ?
                         agentProperties.getKeyStorePassword() : null)
-                .keyAlias(!ObjectUtils.isEmpty(agentProperties.getKeyAlias()) ? agentProperties.getKeyAlias() : null)
-                .keyPassword(!ObjectUtils.isEmpty(agentProperties.getKeyPassword()) ? agentProperties.getKeyPassword() : null)
-                .keystoreType(!ObjectUtils.isEmpty(agentProperties.getKeyStoreType()) ? agentProperties.getKeyStoreType() : null)
+                .keyAlias(ObjectUtils.isNotEmpty(agentProperties.getKeyAlias()) ? agentProperties.getKeyAlias() : null)
+                .keyPassword(ObjectUtils.isNotEmpty(agentProperties.getKeyPassword()) ? agentProperties.getKeyPassword() : null)
+                .keystoreType(ObjectUtils.isNotEmpty(agentProperties.getKeyStoreType()) ? agentProperties.getKeyStoreType() : null)
                 .build();
 
         Location location = managerHolder.getAzureResourceManager().subscriptions()
                 .getById(azureProperties.getSubscriptionId())
                 .getLocationByRegion(Region.fromName(managerHolder.getApiService().regionName()));
-        AuthConfig authConfig = new AuthConfig
-                .Builder(agentProperties.getUsername(), agentProperties.getPassword())
-                .build();
+
+        AuthConfig authConfig;
+        if(ObjectUtils.isNotEmpty(agentProperties.getToken())) {
+             authConfig = new AuthConfig
+                    .Builder(agentProperties.getToken())
+                    .build();
+        } else {
+             authConfig = new AuthConfig
+                    .Builder(agentProperties.getUsername(), agentProperties.getPassword())
+                    .build();
+        }
+
         ControlPlaneConfig controlPlaneConfig = new ControlPlaneConfig.Builder()
                 .url(agentProperties.getUrl())
                 .authConfig(authConfig)
@@ -106,7 +115,8 @@ public class SDKConfigBuilder {
                 .heartbeatInterval(agentProperties.getSyncHeartbeatIntervalSeconds())
                 .assetsSyncInterval(agentProperties.getSyncAssetsIntervalSeconds())
                 .metricsSendInterval(agentProperties.getSyncMetricsIntervalSeconds())
-                .logLevel(Level.ERROR)
+                .logLevel(Level.valueOf(ObjectUtils.isEmpty(agentProperties.getLogLevel()) ?
+                        "ALL" : agentProperties.getLogLevel()))
                 .build();
     }
 
