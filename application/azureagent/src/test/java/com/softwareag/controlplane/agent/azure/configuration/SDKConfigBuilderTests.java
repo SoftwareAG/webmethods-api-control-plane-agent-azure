@@ -63,7 +63,7 @@ public class SDKConfigBuilderTests {
         agentProperties.setSyncMetricsIntervalSeconds(500);
 
         //runtime properties
-        runtimeProperties.setCapacityUnit("per year");
+        runtimeProperties.setCapacityUnit("PER_YEAR");
         runtimeProperties.setType("AzureType");
         runtimeProperties.setCapacityValue("500000");
 

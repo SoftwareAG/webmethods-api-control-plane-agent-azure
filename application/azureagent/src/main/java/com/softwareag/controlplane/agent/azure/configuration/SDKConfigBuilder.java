@@ -80,7 +80,7 @@ public class SDKConfigBuilder {
         Capacity capacity = null;
         if(ObjectUtils.isNotEmpty(runtimeProperties.getCapacityValue())) {
             capacity = new Capacity();
-            capacity.setUnit(Capacity.TimeUnit.PER_YEAR); //TODO this needs to be read from properties
+            capacity.setUnit(Capacity.TimeUnit.valueOf(runtimeProperties.getCapacityUnit()));
             capacity.setValue(Long.parseLong(runtimeProperties.getCapacityValue()));
         }
         // runtime ID = tenantId_serviceName
