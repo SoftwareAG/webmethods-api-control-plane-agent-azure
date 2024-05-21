@@ -16,8 +16,6 @@ public final class Constants {
     public static final String COLON = ":";
     public static final String UNDERSCORE = "_";
 
-    public static final int BUFFERTIME = 60;
-
     public static final String INBOUND_TAG="inbound";
 
     public static final String BACKEND_TAG="backend";

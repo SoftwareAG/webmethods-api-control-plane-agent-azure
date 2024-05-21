@@ -1,6 +1,7 @@
 package com.softwareag.controlplane.agent.azure.configuration;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -23,4 +24,7 @@ public class AzureProperties {
     private String clientSecret;
     @NotBlank
     private String apiManagementServiceName;
+
+    @PositiveOrZero
+    private int metricsSyncBufferIntervalMinutes;
 }

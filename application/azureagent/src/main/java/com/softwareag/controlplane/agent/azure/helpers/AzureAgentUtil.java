@@ -24,7 +24,7 @@ public class AzureAgentUtil {
 
     public static String reduceTimeRange(long milliseconds, int bufferTime) {
         Instant instant = Instant.ofEpochMilli(milliseconds);
-        Instant minusFifteenMinutes = instant.minusSeconds(bufferTime * 60); // 15 minutes = 15 * 60 seconds
+        Instant minusFifteenMinutes = instant.minusSeconds(bufferTime * 60); // Eg: 15 minutes = 15 * 60 seconds
         String iso8601DateTime = minusFifteenMinutes.atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         return iso8601DateTime;
     }
