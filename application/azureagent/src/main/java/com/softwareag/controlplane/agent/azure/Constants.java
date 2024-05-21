@@ -17,4 +17,14 @@ public final class Constants {
     public static final String UNDERSCORE = "_";
 
     public static final int BUFFERTIME = 60;
+
+    public static final String INBOUND_TAG="inbound";
+
+    public static final String BACKEND_TAG="backend";
+
+    public static final String OUTBOUND_TAG="outbound";
+
+    public static final String ON_ERROR_TAG="on-error";
+
+    public static final String BASE_TAG="base";
 }
