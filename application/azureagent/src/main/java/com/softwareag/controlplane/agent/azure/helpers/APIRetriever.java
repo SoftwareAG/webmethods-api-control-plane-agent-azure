@@ -3,6 +3,8 @@ package com.softwareag.controlplane.agent.azure.helpers;
 import com.azure.core.http.rest.PagedIterable;
 import com.azure.resourcemanager.apimanagement.models.ApiContract;
 import com.azure.resourcemanager.apimanagement.models.TagContract;
+import com.azure.resourcemanager.apimanagement.models.PolicyCollection;
+import com.azure.resourcemanager.apimanagement.models.OperationContract;
 import com.softwareag.controlplane.agent.azure.Constants;
 import com.softwareag.controlplane.agent.azure.configuration.AgentProperties;
 import com.softwareag.controlplane.agent.azure.configuration.AzureProperties;
@@ -18,7 +20,10 @@ import com.softwareag.controlplane.agentsdk.model.Status;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
+import org.xml.sax.InputSource;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +42,8 @@ public class APIRetriever {
     @Autowired
     private AzureManagersHolder azureManagersHolder;
 
+    @Autowired
+    private PolicyRetriever policyRetriever;
 
     public List<API> retrieveAPIs(boolean toUpdateCache) {
         PagedIterable<ApiContract> apis =
@@ -50,19 +57,23 @@ public class APIRetriever {
         List<API> allAPIs = new ArrayList<>();
         if(ObjectUtils.isEmpty(apis)) return allAPIs;
 
-       apis.stream().forEach(azureAPI -> {
+        //fetching the count of global and product policy count
+        int globalProductPolicyCount = policyRetriever.getGlobalProductPolicyCount();
+
+        apis.stream().forEach(azureAPI -> {
            String azureAPIId = AzureAgentUtil.constructAPIId(azureAPI.name(),
                    azureProperties.getTenantId(), azureProperties.getApiManagementServiceName());
-
            // Azure apiType has values such as SOAP, GRAPHQL , for REST values left to be empty
            String azureAPIType = azureAPI.apiType() == null ? "REST" : azureAPI.apiType().toString().toUpperCase();
            if (validAPICreation(azureAPI, azureAPIType)) {
+               int policyCount=policyRetriever.getPoliciesCount(azureAPI.name())+globalProductPolicyCount;
                String versionSetId = azureAPI.apiVersionSetId() != null ?
                        azureAPI.apiVersionSetId() : null;
                API api = (API) new API.Builder(azureAPIId, API.Type.valueOf(azureAPIType))
                        .version(azureAPI.apiVersion())
                        .versionSetId(versionSetId)
                        .runtimeAPIId(azureAPI.id())
+                       .policiesCount(policyCount)
                        .status(Status.ACTIVE)
                        .owner(AzureAgentUtil.getOwnerInfo(agentProperties.getUsername()))
                        .tags(getAPITags(azureAPI.name()))

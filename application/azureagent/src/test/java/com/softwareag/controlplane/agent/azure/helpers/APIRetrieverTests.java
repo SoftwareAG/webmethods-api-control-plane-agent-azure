@@ -15,7 +15,6 @@ import com.azure.resourcemanager.resources.models.Subscriptions;
 import com.softwareag.controlplane.agent.azure.configuration.AgentProperties;
 import com.softwareag.controlplane.agent.azure.configuration.AzureProperties;
 import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
-import com.softwareag.controlplane.agentsdk.api.client.ControlPlaneClient;
 import com.softwareag.controlplane.agentsdk.core.cache.CacheManager;
 import com.softwareag.controlplane.agentsdk.core.client.RestControlPlaneClient;
 import com.softwareag.controlplane.agentsdk.model.API;
@@ -32,6 +31,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
+import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -53,6 +52,10 @@ public class APIRetrieverTests {
 
     @Spy
     private AzureManagersHolder azureManagersHolder;
+
+
+    @Mock
+    PolicyRetriever policyRetriever;
 
     @InjectMocks
     APIRetriever apiRetriever;
@@ -149,6 +152,9 @@ public class APIRetrieverTests {
         when(azureManagersHolder.getAzureApiManager().apis().listByService(azureProperties.getResourceGroup(),
                 azureProperties.getApiManagementServiceName()).stream()).thenReturn(apiContractsIterator.stream());
 
+        //mocking the policy count for the api
+        when(policyRetriever.getPoliciesCount(any())).thenReturn(3);
+        when(policyRetriever.getGlobalProductPolicyCount()).thenReturn(4);
 
     }
 
