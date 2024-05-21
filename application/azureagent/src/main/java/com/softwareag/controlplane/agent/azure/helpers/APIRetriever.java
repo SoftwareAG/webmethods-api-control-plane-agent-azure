@@ -42,6 +42,8 @@ public class APIRetriever {
     @Autowired
     private AzureManagersHolder azureManagersHolder;
 
+    @Autowired
+    private PolicyRetriever policyRetriever;
 
     public List<API> retrieveAPIs(boolean toUpdateCache) {
         PagedIterable<ApiContract> apis =
@@ -55,19 +57,16 @@ public class APIRetriever {
         List<API> allAPIs = new ArrayList<>();
         if(ObjectUtils.isEmpty(apis)) return allAPIs;
 
-        //Global Policy and Product Policy will be common for all the APIs
-        PolicyCollection productPolicies = azureManagersHolder.getAzureApiManager().productPolicies().listByProduct(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), "unlimited");
-        int productPolicyCount = parsePolicies(productPolicies);
-        PolicyCollection globalPolicy =azureManagersHolder.getAzureApiManager().policies().listByService(azureProperties.getResourceGroup(),azureProperties.getApiManagementServiceName());
-        int globalPolicyCount = parsePolicies(globalPolicy);
+        //fetching the count of global and product policy count
+        int globalProductPolicyCount = policyRetriever.getGlobalProductPolicyCount();
 
         apis.stream().forEach(azureAPI -> {
            String azureAPIId = AzureAgentUtil.constructAPIId(azureAPI.name(),
                    azureProperties.getTenantId(), azureProperties.getApiManagementServiceName());
-           int policyCount=getPoliciesCount(azureAPI.name())+productPolicyCount+globalPolicyCount;
            // Azure apiType has values such as SOAP, GRAPHQL , for REST values left to be empty
            String azureAPIType = azureAPI.apiType() == null ? "REST" : azureAPI.apiType().toString().toUpperCase();
            if (validAPICreation(azureAPI, azureAPIType)) {
+               int policyCount=policyRetriever.getPoliciesCount(azureAPI.name())+globalProductPolicyCount;
                String versionSetId = azureAPI.apiVersionSetId() != null ?
                        azureAPI.apiVersionSetId() : null;
                API api = (API) new API.Builder(azureAPIId, API.Type.valueOf(azureAPIType))
@@ -99,33 +98,6 @@ public class APIRetriever {
         Set<String> tags = tagContracts.stream()
                 .map(TagContract::displayName).collect(Collectors.toSet());
         return tags;
-    }
-
-    private int getPoliciesCount(String apiId)  {
-        int apiOperationPolicyCount=0;
-        PagedIterable<OperationContract> apiOperations = azureManagersHolder.getAzureApiManager().apiOperations().listByApi(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), apiId);
-        PolicyCollection apiPolicies = azureManagersHolder.getAzureApiManager().apiPolicies().listByApi(azureProperties.getResourceGroup(),azureProperties.getApiManagementServiceName(),apiId);
-        int apiPolicyCount = parsePolicies(apiPolicies);
-        for (OperationContract operation : apiOperations) {
-            PolicyCollection apiOperationPolicies = azureManagersHolder.getAzureApiManager().apiOperationPolicies().listByOperation(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), apiId, operation.name());
-            apiOperationPolicyCount += parsePolicies(apiOperationPolicies);
-        }
-        return apiPolicyCount + apiOperationPolicyCount;
-    }
-
-    private int parsePolicies(PolicyCollection policies) {
-        return policies.value().stream().mapToInt(policy -> {
-            try {
-                String xmlPolicy = policy.value();
-                SAXParserFactory spf = SAXParserFactory.newInstance();
-                SAXParser saxParser = spf.newSAXParser();
-                PolicySAXParser policySAXParser = new PolicySAXParser();
-                saxParser.parse(new InputSource(new StringReader(xmlPolicy)), policySAXParser);
-                return policySAXParser.getPolicyCount();
-            } catch (Exception e) {
-                return 0;
-            }
-        }).sum();
     }
 
     private boolean validAPICreation(ApiContract azureAPI, String azureAPIType) {
