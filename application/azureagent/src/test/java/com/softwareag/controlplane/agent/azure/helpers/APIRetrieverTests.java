@@ -154,7 +154,7 @@ public class APIRetrieverTests {
 
         //mocking the policy count for the api
         when(policyRetriever.getPoliciesCount(any())).thenReturn(3);
-        when(policyRetriever.getGlobalAndProductPolicy()).thenReturn(4);
+        when(policyRetriever.getGlobalProductPolicyCount()).thenReturn(4);
 
     }
 
