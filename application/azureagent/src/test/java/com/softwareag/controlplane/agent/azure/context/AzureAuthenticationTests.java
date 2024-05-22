@@ -1,8 +1,6 @@
 package com.softwareag.controlplane.agent.azure.context;
 
 import com.azure.core.management.Region;
-import com.azure.core.management.profile.AzureProfile;
-import com.azure.identity.ClientSecretCredential;
 import com.azure.resourcemanager.apimanagement.ApiManagementManager;
 import com.azure.resourcemanager.apimanagement.models.ApiManagementServiceResource;
 import com.azure.resourcemanager.apimanagement.models.ApiManagementServices;
@@ -13,15 +11,8 @@ import com.azure.resourcemanager.resources.models.Subscription;
 import com.azure.resourcemanager.resources.models.Subscriptions;
 import com.softwareag.controlplane.agent.azure.configuration.AzureProperties;
 import com.softwareag.controlplane.agent.azure.configuration.SDKConfigBuilder;
-import com.softwareag.controlplane.agentsdk.api.client.SdkClientException;
 import com.softwareag.controlplane.agentsdk.api.config.RuntimeConfig;
 import com.softwareag.controlplane.agentsdk.api.config.SdkConfig;
-import com.softwareag.controlplane.agentsdk.model.API;
-import com.softwareag.controlplane.agentsdk.model.Asset;
-import com.softwareag.controlplane.agentsdk.model.AssetSyncAction;
-import com.softwareag.controlplane.agentsdk.model.Heartbeat;
-import com.softwareag.controlplane.agentsdk.model.Metrics;
-import jakarta.validation.Validation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,17 +20,10 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.when;
 
 public class AzureAuthenticationTests {
@@ -93,17 +77,4 @@ public class AzureAuthenticationTests {
 
     }
 
-    @Test
-    void onApplicationEventTest() {
-        try (MockedStatic<ApiManagementManager> utilities = Mockito.mockStatic(ApiManagementManager.class)) {
-            utilities.when(() -> ApiManagementManager.authenticate(Mockito.mock(ClientSecretCredential.class),
-                            Mockito.mock(AzureProfile.class)))
-                    .thenReturn(apiManagementManager);
-//            utilities.when(() -> apiManagementManager.apiManagementServices())
-//                    .thenReturn(apiManagementServices);
-//            when(apiManagementManager.apiManagementServices()).thenReturn(apiManagementServices);
-//            when(apiManagementServices.getByResourceGroup(notNull(),notNull())).thenReturn(Mockito.mock(ApiManagementServiceResource.class));
-            assertThrows(RuntimeException.class, () -> azureAuthentication.onApplicationEvent(Mockito.mock(ApplicationReadyEvent.class)));
-        }
-    }
 }

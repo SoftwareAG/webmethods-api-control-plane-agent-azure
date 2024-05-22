@@ -16,16 +16,13 @@ import jakarta.validation.Valid;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -75,26 +72,22 @@ public class SDKConfigBuilderTests {
         azureProperties.setResourceGroup("azuregroup");
         azureProperties.setApiManagementServiceName("serviceName");
 
-//        sdkConfigBuilder = new SDKConfigBuilder(agentProperties, runtimeProperties, azureProperties,
-//                azureManagersHolder);
-     //   sdkConfigBuilder = new SDKConfigBuilder();
-
     }
 
     @Test
     void testSDKConfigInitialize() {
 
         Set<ConstraintViolation<AgentProperties>> violations = ValidatorFactory.getValidator().validate(agentProperties);
-        assertThat(violations).isEmpty();
+        assert(violations).isEmpty();
 
         Set<ConstraintViolation<AzureProperties>> azureViolations =
                 ValidatorFactory.getValidator().validate(azureProperties);
-        assertThat(azureViolations).isEmpty();
+        assert(azureViolations).isEmpty();
 
         Set<ConstraintViolation<RuntimeProperties>> runtimeViolations =
                 ValidatorFactory.getValidator().validate(runtimeProperties);
-        assertThat(runtimeViolations).isEmpty();
-        assertThat(sdkConfigBuilder).isNotNull();
+        assert(runtimeViolations).isEmpty();
+        assertNotNull(sdkConfigBuilder);
     }
 
     @Test
@@ -109,7 +102,7 @@ public class SDKConfigBuilderTests {
         when(azureManagersHolder.getAzureApiManager()).thenReturn(Mockito.mock(ApiManagementManager.class));
         when(azureManagersHolder.getAzureApiManager().apis()).thenReturn(Mockito.mock(Apis.class));
         SdkConfig sdkconfig = sdkConfigBuilder.sdkConfig();
-        assertThat(sdkconfig).isNotNull();
+        assertNotNull(sdkconfig);
     }
 
 }

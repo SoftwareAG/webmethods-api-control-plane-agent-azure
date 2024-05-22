@@ -3,13 +3,12 @@ package com.softwareag.controlplane.agent.azure.configuration;
 import com.softwareag.controlplane.agentsdk.core.validator.ValidatorFactory;
 import jakarta.validation.ConstraintViolation;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@TestPropertySource(locations = "apicp.runtime")
+
 public class RuntimePropertiesTests {
 
     RuntimeProperties properties = new RuntimeProperties();
@@ -20,7 +19,7 @@ public class RuntimePropertiesTests {
         properties.setType("AzureType");
         properties.setCapacityValue("500000");
         Set<ConstraintViolation<RuntimeProperties>> violations = ValidatorFactory.getValidator().validate(properties);
-        assertThat(violations).isEmpty();
+        assert(violations).isEmpty();
     }
 
     @Test
@@ -29,6 +28,6 @@ public class RuntimePropertiesTests {
         properties.setType(null);
         properties.setCapacityValue("500000");
         Set<ConstraintViolation<RuntimeProperties>> violations = ValidatorFactory.getValidator().validate(properties);
-        assertThat(violations).isNotEmpty();
+        assertFalse(violations.isEmpty());
     }
 }

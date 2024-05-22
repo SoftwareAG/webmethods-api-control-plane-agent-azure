@@ -3,13 +3,12 @@ package com.softwareag.controlplane.agent.azure.configuration;
 import com.softwareag.controlplane.agentsdk.core.validator.ValidatorFactory;
 import jakarta.validation.ConstraintViolation;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.TestPropertySource;
 
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
-@TestPropertySource(locations = "apicp")
+
 public class AgentPropertiesTests {
 
     private AgentProperties agentProperties = new AgentProperties();
@@ -26,7 +25,7 @@ public class AgentPropertiesTests {
         agentProperties.setSyncHeartbeatIntervalSeconds(60);
         agentProperties.setSyncMetricsIntervalSeconds(500);
         Set<ConstraintViolation<AgentProperties>> violations = ValidatorFactory.getValidator().validate(agentProperties);
-        assertThat(violations).isEmpty();
+        assert(violations).isEmpty();
     }
 
     @Test
@@ -41,7 +40,7 @@ public class AgentPropertiesTests {
         agentProperties.setSyncHeartbeatIntervalSeconds(60);
         agentProperties.setSyncMetricsIntervalSeconds(500);
         Set<ConstraintViolation<AgentProperties>> violations = ValidatorFactory.getValidator().validate(agentProperties);
-        assertThat(violations).isNotEmpty();
+        assertFalse(violations.isEmpty());
     }
 
 }

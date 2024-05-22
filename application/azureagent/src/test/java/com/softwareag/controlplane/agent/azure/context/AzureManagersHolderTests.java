@@ -4,13 +4,11 @@ import com.azure.core.management.profile.AzureProfile;
 import com.azure.resourcemanager.apimanagement.ApiManagementManager;
 import com.azure.resourcemanager.apimanagement.models.ApiManagementServiceResource;
 import com.azure.resourcemanager.resources.ResourceManager;
-import com.softwareag.controlplane.agent.azure.context.AzureManagersHolder;
 import com.softwareag.controlplane.agentsdk.core.client.RestControlPlaneClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.test.context.TestPropertySource;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 public class AzureManagersHolderTests {
@@ -21,31 +19,31 @@ public class AzureManagersHolderTests {
     @Test
     void profileHolderTest() {
         azureManagersHolder.setAzureProfile(Mockito.mock(AzureProfile.class));
-        assertThat(azureManagersHolder.getAzureProfile()).isNotNull();
+        assertNotNull(azureManagersHolder.getAzureProfile());
     }
 
     @Test
     void apiManagerHolderTest() {
         azureManagersHolder.setAzureApiManager(Mockito.mock(ApiManagementManager.class));
-        assertThat(azureManagersHolder.getAzureApiManager()).isNotNull();
+        assertNotNull(azureManagersHolder.getAzureApiManager());
     }
 
     @Test
     void azureResourceManagerTest() {
         azureManagersHolder.setAzureResourceManager(Mockito.mock(ResourceManager.class));
-        assertThat(azureManagersHolder.getAzureResourceManager()).isNotNull();
+        assertNotNull(azureManagersHolder.getAzureResourceManager());
     }
 
     @Test
     void restControlPlaneClientTest() {
         azureManagersHolder.setRestControlPlaneClient(Mockito.mock(RestControlPlaneClient.class));
-        assertThat(azureManagersHolder.getRestControlPlaneClient()).isNotNull();
+        assertNotNull(azureManagersHolder.getRestControlPlaneClient());
     }
 
     @Test
     void apiServiceHolderTest() {
         azureManagersHolder.setApiService(Mockito.mock(ApiManagementServiceResource.class));
-        assertThat(azureManagersHolder.getApiService()).isNotNull();
+        assertNotNull(azureManagersHolder.getApiService());
     }
 
 }
