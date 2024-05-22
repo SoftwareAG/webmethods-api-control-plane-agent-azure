@@ -44,7 +44,7 @@ public class PolicyRetrieverTests {
 
         when(policyContract.id()).thenReturn("/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/a1");
         when(policyContract.value()).thenReturn("<!--\n" +
-        "    IMPORTANT:\n" +
+                "    IMPORTANT:\n" +
                 "    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.\n" +
                 "    - Only the <forward-request> policy element can appear within the <backend> section element.\n" +
                 "    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.\n" +
