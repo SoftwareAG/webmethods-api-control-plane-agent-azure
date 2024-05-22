@@ -31,8 +31,8 @@ public class AgentPropertiesTests {
     @Test
     void testInValidAgentProperties() {
         agentProperties.setPassword(null);
-        agentProperties.setUrl("http://test:8888");
         agentProperties.setUsername("John Doe");
+        agentProperties.setPassword("John Doe");
         agentProperties.setSyncAssetsEnabled(true);
         agentProperties.setPublishAssetsEnabled(true);
         agentProperties.setSyncMetricsEnabled(true);

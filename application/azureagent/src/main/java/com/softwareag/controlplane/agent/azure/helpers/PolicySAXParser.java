@@ -11,10 +11,11 @@ import org.xml.sax.helpers.DefaultHandler;
 @Component
 public class PolicySAXParser extends DefaultHandler {
 
-    boolean isInbound = false;
-    boolean isBackend = false;
-    boolean isOutbound =false;
-    boolean isOnError = false;
+    private boolean isInbound = false;
+    private boolean isBackend = false;
+    private boolean isOutbound =false;
+    private boolean isOnError = false;
+    private boolean isInsidePolicyTag = false;
 
     @Getter
     int policyCount = 0;
@@ -36,8 +37,11 @@ public class PolicySAXParser extends DefaultHandler {
                 isOnError=true;
                 break;
             default:
-                if (!qName.equalsIgnoreCase(Constants.BASE_TAG) && (isInbound || isBackend || isOutbound || isOnError)) {
-                    policyCount++;
+                if ((isInbound || isBackend || isOutbound || isOnError) && !qName.equalsIgnoreCase("base")) {
+                    if (!isInsidePolicyTag) {
+                        policyCount++;
+                        isInsidePolicyTag = true;
+                    }
                 }
                 break;
         }
@@ -61,6 +65,9 @@ public class PolicySAXParser extends DefaultHandler {
                 isOnError=false;
                 break;
             default:
+                if (isInsidePolicyTag && (isInbound || isBackend || isOutbound || isOnError)) {
+                    isInsidePolicyTag = false;
+                }
                 break;
         }
     }

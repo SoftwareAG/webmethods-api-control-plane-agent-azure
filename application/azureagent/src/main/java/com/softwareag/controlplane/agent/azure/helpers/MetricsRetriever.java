@@ -35,8 +35,8 @@ public class MetricsRetriever {
     public List<Metrics> metricsRetriever(long fromTimestamp, long toTimestamp, long interval) {
         List<Metrics> metrics = new ArrayList<>();
         String filter = Constants.FILTER_GE_TIMESTAMP + Constants.SINGLE_QUOTE
-                + AzureAgentUtil.reduceTimeRange(fromTimestamp, Constants.BUFFERTIME) + Constants.SINGLE_QUOTE + Constants.FILTER_LE_TIMESTAMP
-                + Constants.SINGLE_QUOTE + AzureAgentUtil.reduceTimeRange(toTimestamp, Constants.BUFFERTIME) + Constants.SINGLE_QUOTE;
+                + AzureAgentUtil.reduceTimeRange(fromTimestamp, azureProperties.getMetricsSyncBufferIntervalMinutes()) + Constants.SINGLE_QUOTE + Constants.FILTER_LE_TIMESTAMP
+                + Constants.SINGLE_QUOTE + AzureAgentUtil.reduceTimeRange(toTimestamp, azureProperties.getMetricsSyncBufferIntervalMinutes()) + Constants.SINGLE_QUOTE;
         PagedIterable<ReportRecordContract> azureMetricsByTime =
                 azureManagersHolder.getAzureApiManager().reports().listByTime(azureProperties.getResourceGroup(),
                         azureProperties.getApiManagementServiceName(), filter,
