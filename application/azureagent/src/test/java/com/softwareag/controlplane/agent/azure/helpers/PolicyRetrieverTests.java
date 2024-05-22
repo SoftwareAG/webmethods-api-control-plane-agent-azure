@@ -41,6 +41,7 @@ public class PolicyRetrieverTests {
         PolicyContract policyContract = mock(PolicyContract.class);
         PolicyCollection policyCollection = mock(PolicyCollection.class);
 
+
         when(policyContract.id()).thenReturn("/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/a1");
         when(policyContract.value()).thenReturn("<!--\n" +
         "    IMPORTANT:\n" +
@@ -69,6 +70,66 @@ public class PolicyRetrieverTests {
         when(policyCollection.value()).thenReturn(policyContractList);
         when(policyCollection.count()).thenReturn(1L);
 
+        List<PolicyContract> policyContractList1 = new ArrayList<>();
+        PolicyContract policyContract1 = mock(PolicyContract.class);
+        PolicyCollection policyCollection1=mock(PolicyCollection.class);
+        when(policyContract1.id()).thenReturn("/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/a1");
+
+        //here the policy count is 6 (the inner tag should not be considered)
+        when(policyContract1.value()).thenReturn("<policies>\n" +
+                "  <inbound>\n" +
+                "    <base />\n" +
+                "    <rate-limit-by-key calls=\"1000\" renewal-period=\"60\" counter-key=\"@(context.Subscription?.Key ?? &quot;anonymous&quot;)\" />\n" +
+                "    <ip-filter action=\"allow\">\n" +
+                "      <address-range from=\"10.10.20.30\" to=\"10.10.20.80\">\n" +
+                "\t\t<open>\n" +
+                "\t\t\t<test1>\n" +
+                "\t\t\t</test1>\n" +
+                "\t\t</open>\n" +
+                "\t  </address-range>\n" +
+                "    </ip-filter>\n" +
+                "  </inbound>\n" +
+                "  <backend>\n" +
+                "    <base />\n" +
+                "\t<rate-limit-by-key calls=\"1000\" renewal-period=\"60\" counter-key=\"@(context.Subscription?.Key ?? &quot;anonymous&quot;)\" />\n" +
+                "    <ip-filter action=\"allow\">\n" +
+                "      <address-range from=\"10.10.20.30\" to=\"10.10.20.80\">\n" +
+                "\t\t<open>\n" +
+                "\t\t\t<test1>\n" +
+                "\t\t\t</test1>\n" +
+                "\t\t</open>\n" +
+                "\t  </address-range>\n" +
+                "    </ip-filter>\n" +
+                "  </backend>\n" +
+                "  <outbound>\n" +
+                "    <base />\n" +
+                "\t<ip-filter action=\"allow\">\n" +
+                "      <address-range from=\"10.10.20.30\" to=\"10.10.20.80\">\n" +
+                "\t\t<open>\n" +
+                "\t\t\t<test1>\n" +
+                "\t\t\t</test1>\n" +
+                "\t\t</open>\n" +
+                "\t  </address-range>\n" +
+                "    </ip-filter>\n" +
+                "  </outbound>\n" +
+                "  <on-error>\n" +
+                "    <base />\n" +
+                "\t<ip-filter action=\"allow\">\n" +
+                "      <address-range from=\"10.10.20.30\" to=\"10.10.20.80\">\n" +
+                "\t\t<open>\n" +
+                "\t\t\t<test1>\n" +
+                "\t\t\t</test1>\n" +
+                "\t\t</open>\n" +
+                "\t  </address-range>\n" +
+                "    </ip-filter>\n" +
+                "  </on-error>\n" +
+                "</policies>");
+        when(policyContract1.name()).thenReturn("policy");
+        when(policyContract1.format()).thenReturn(PolicyContentFormat.XML);
+        policyContractList1.add(policyContract1);
+        when(policyCollection1.value()).thenReturn(policyContractList1);
+        when(policyCollection1.count()).thenReturn(1L);
+
         //Product Policy Mock
         when(azureManagersHolder.getAzureApiManager().productPolicies()).thenReturn(mock(ProductPolicies.class));
         when(azureManagersHolder.getAzureApiManager().productPolicies().listByProduct(azureProperties.getResourceGroup(),
@@ -83,11 +144,13 @@ public class PolicyRetrieverTests {
         //API Policy Mock
         when(azureManagersHolder.getAzureApiManager().apiPolicies()).thenReturn(mock(ApiPolicies.class));
         when(azureManagersHolder.getAzureApiManager().apiPolicies().listByApi(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), "api_id")).thenReturn(policyCollection);
+        when(azureManagersHolder.getAzureApiManager().apiPolicies().listByApi(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), "api_id_1")).thenReturn(policyCollection1);
 
         //Operation Policy Mock
         when(azureManagersHolder.getAzureApiManager().apiOperations()).thenReturn(mock(ApiOperations.class));
-         when(azureManagersHolder.getAzureApiManager().apiOperationPolicies()).thenReturn(mock(ApiOperationPolicies.class));
+        when(azureManagersHolder.getAzureApiManager().apiOperationPolicies()).thenReturn(mock(ApiOperationPolicies.class));
         when(azureManagersHolder.getAzureApiManager().apiOperationPolicies().listByOperation(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), "api_id", "addnumberget")).thenReturn(policyCollection);
+        when(azureManagersHolder.getAzureApiManager().apiOperationPolicies().listByOperation(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), "api_id_1", "addnumberget")).thenReturn(policyCollection);
 
 
     }
@@ -122,5 +185,31 @@ public class PolicyRetrieverTests {
 
         int count = policyRetriever.getPoliciesCount("api_id");
         assertEquals(count,6);
+    }
+
+    @Test
+    @Order(3)
+    void retrieveApiOperationPolicyCountInnerTag(){
+        List<OperationContract> operationContractList= new ArrayList<>();
+
+        OperationContract operationContract = mock(OperationContract.class);
+        when(operationContract.id()).thenReturn("/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/a1");
+        when(operationContract.name()).thenReturn("addnumberget");
+        operationContractList.add(operationContract);
+
+        PagedResponse<OperationContract> mockPagedResponse = mock(PagedResponse.class);
+        when(mockPagedResponse.getValue()).thenReturn(operationContractList);
+
+        // Mock PagedIterable to return an iterator over the PagedResponse
+        PagedIterable<OperationContract> mockApiOperations = mock(PagedIterable.class);
+        when(mockApiOperations.iterator()).thenReturn(operationContractList.iterator());
+        when(mockApiOperations.iterableByPage()).thenReturn(Arrays.asList(mockPagedResponse));
+
+        when(azureManagersHolder.getAzureApiManager().apiOperations().listByApi(azureProperties.getResourceGroup(), azureProperties.getApiManagementServiceName(), "api_id_1")).thenReturn(mockApiOperations);
+
+
+
+        int count = policyRetriever.getPoliciesCount("api_id_1");
+        assertEquals(count,9);
     }
 }
