@@ -1,0 +1,55 @@
+plugins {
+    id "com.microsoft.azure.azurefunctions" version "1.13.0"
+    id 'java'
+    id "io.freefair.lombok" version "6.4.3"
+    id "io.freefair.aggregate-javadoc" version "6.4.3"
+}
+
+group 'com.softwareag.controlplane.agent.azure.functions'
+version '10.15.0-v0002'
+
+repositories {
+   mavenCentral();
+}
+
+apply plugin: 'java'
+apply plugin: "com.microsoft.azure.azurefunctions"
+apply from: '../dependencies.gradle'
+
+
+dependencies {
+    implementation fileTree(dir: '../libs', include: '*.jar')
+    implementation azureDependency
+    implementation agentSdk
+    implementation azureFunctions
+    implementation azureTranstiveDependency
+    implementation transitiveDependencies
+    annotationProcessor springBootAnnotationProcessor
+
+    testImplementation junit
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+java {
+    sourceCompatibility = '17'
+}
+
+
+configurations {
+	all {
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
+}
+
+azurefunctions {
+    resourceGroup = 'java-functions-group'
+    appName = 'AzureFunction'
+    pricingTier = 'Consumption'
+    region = 'westus'
+    runtime {
+      os = 'windows'
+      javaVersion = '17'
+    }
+    localDebug = "transport=dt_socket,server=y,suspend=n,address=5005"
+}

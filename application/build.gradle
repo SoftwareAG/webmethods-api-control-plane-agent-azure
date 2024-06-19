@@ -1,0 +1,53 @@
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.1.6'
+	id 'io.spring.dependency-management' version '1.1.4'
+	id "io.freefair.lombok" version "6.4.3"
+	id "io.freefair.aggregate-javadoc" version "6.4.3"
+}
+
+group = 'com.softwareag.controlplane.azureagent'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = '17'
+}
+
+repositories {
+}
+
+dependencies {
+	implementation fileTree(dir: '../libs', include: '*.jar')
+	implementation project(':common')
+
+	implementation rootProject.agentSdk
+	implementation rootProject.transitiveDependencies
+	implementation rootProject.azureDependency
+	implementation rootProject.azureTranstiveDependency
+	implementation rootProject.springBootApplication
+	annotationProcessor rootProject.springBootAnnotationProcessor
+
+	testImplementation rootProject.junit
+}
+
+
+tasks.named('bootJar') {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+bootRun {
+
+}
+
+configurations {
+	all {
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+

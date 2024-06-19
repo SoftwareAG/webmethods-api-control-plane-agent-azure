@@ -1,28 +1,44 @@
 version: '3.8'
 services:
-  azureagent:
-    build: .
-    image: "az-agent-17-05-v1:latest"
-    hostname: azureagent
+  azure-agent:
+    image: ${AZURE_AGENT_IMAGE}
+    container_name: azure-apigateway-agent
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      - azure.subscription-id=
-      - azure.resource-group=
-      - azure.tenant-id=
-      - azure.client-id=
-      - azure.client-secret=
-      - azure.api-management-service-name=
-      - apicp.url=
-      - apicp.username=
-      - apicp.password=
-      - apicp.authenticate.token=
-      - apicp.sync-heartbeat-interval-seconds=30
-      - apicp.publish-assets-enabled=true
-      - apicp.sync-metrics-enabled=false
-      - apicp.sync-metrics-interval-seconds=900
-      - apicp.sync-assets-enabled=true
-      - apicp.sync-assets-interval-seconds=120
-      - apicp.runtime.capacity-value=500000
-      - apicp.runtime.capacity-unit=per_week
-      - apicp.runtime.host=https://azure.portal
-      - apicp.runtime.type=azure
-      - apicp.log-level=ERROR
+      - apicp.ssl-enabled=${APICP_SSL_ENABLED}
+      - apicp.trust-store-path=/opt/softwareag/certs/trust_store.jks
+      - apicp.trust-store-password=${APICP_TRUSTSTORE_PASSWORD}
+      - apicp.trust-store-type=${APICP_TRUSTSTORE_TYPE}
+      - apicp.key-store-path=${APICP_KEYSTORE_PATH}
+      - apicp.key-store-password=${APICP_KEYSTORE_PASSWORD}
+      - apicp.key-store-type=${APICP_KEYSTORE_TYPE}
+      - apicp.key-alias=${APICP_KEY_ALIAS}
+      - apicp.key-password=${APICP_KEY_PASSWORD}
+      - azure.subscription-id=${AZURE_SUBSCRIPTION_ID}
+      - azure.resource-group=${AZURE_RESOURCE_GROUP}
+      - azure.tenant-id=${AZURE_TENANT_ID}
+      - azure.client-id=${AZURE_CLIENT_ID}
+      - azure.client-secret=${AZURE_CLIENT_SECRET}
+      - azure.api-management-service-name=${AZURE_API_MANAGEMENT_SERVICE_NAME}
+      - azure.metrics-sync-buffer-interval-minutes=${AZURE_MERTICS_SYNC_BUFFER_INTERVAL_MINUTES}
+      - azure.metrics-by-requests-or-insights=${AZURE_METRICS_BY_REQUESTS_OR_INSIGHTS}
+      - apicp.url=${APICP_URL}
+      - apicp.username=${APICP_USERNAME}
+      - apicp.password=${APICP_PASSWORD}
+      - apicp.token=${APICP_TOKEN}
+      - apicp.sync-heartbeat-interval-seconds=${APICP_HEARTBEAT_SEND_INTERVAL_SECONDS}
+      - apicp.publish-assets-enabled=${APICP_PUBLISH_ASSETS}
+      - apicp.sync-metrics-enabled=${APICP_SEND_METRICS}
+      - apicp.sync-metrics-interval-seconds=${APICP_METRICS_SEND_INTERVAL_SECONDS}
+      - apicp.sync-assets-enabled=${APICP_SYNC_ASSETS}
+      - apicp.sync-assets-interval-seconds=${APICP_ASSETS_SYNC_INTERVAL_SECONDS}
+      - apicp.runtime.capacity-value=${APICP_RUNTIME_CAPACITY_VALUE}
+      - apicp.runtime.capacity-unit=${APICP_RUNTIME_CAPACITY_UNIT}
+      - apicp.runtime.type=${APICP_RUNTIME_TYPE_ID}
+      - apicp.log-level=${APICP_LOG_LEVEL}
+
+    # Uncomment the volumes config section if ssl is enabled
+
+#    volumes:
+#      - ${APICP_TRUSTSTORE_PATH}:/opt/softwareag/certs/trust_store.jks
