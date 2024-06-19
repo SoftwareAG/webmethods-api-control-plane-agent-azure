@@ -1,22 +1,29 @@
 /*
  * Build requirements
  */
-buildscript {
-	repositories {
-		mavenCentral()
-	}
+
+plugins {
+	id 'java'
+	id "io.freefair.aggregate-javadoc" version "6.4.3"
 }
 
-group = 'com.softwareag.controlplane.agent.azure'
+group = 'com.softwareag.controlplane.azureagent'
 
 repositories {
-	mavenCentral()
+	mavenCentral();
 }
+
+apply from: 'dependencies.gradle'
+
 subprojects { sub ->
 	repositories {
-		mavenCentral()
+		mavenCentral();
 	}
+
 }
+
+
+
 
 
 

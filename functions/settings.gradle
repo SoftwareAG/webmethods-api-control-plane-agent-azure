@@ -1,14 +1,9 @@
 String.metaClass.toProjectName  = { -> projectNameConverter(delegate)   }
 
-rootProject.name = 'azureagent'
+rootProject.name = 'azurefunctions'
 
 /* Helper methods */
 /* My string converter implementations */
 def projectNameConverter( orig) {
     orig.replaceAll('(is-?|spm-?|cce-?|cmp-?|mws-?|bas-sd-?|^)(.*)', '$1-' + rootProject.name + '-$2').replaceAll('^-|-$','').replaceAll('--','-')
 }
-
-
-include ':application',':common'
-
-
