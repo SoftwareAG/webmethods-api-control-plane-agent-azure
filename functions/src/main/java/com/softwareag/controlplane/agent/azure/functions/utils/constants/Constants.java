@@ -38,6 +38,8 @@ public class Constants {
 
     public static final String UNDERSCORE = "_";
     public static final String CREATE = "CREATE";
+    public static final String UPDATE = "UPDATE";
+    public static final String DELETE = "DELETE";
     public static final String SYNC_ASSET_ACTION = "SYNC_ASSET_ACTION";
     public static final String SEND_HEARTBEAT_ACTION = "SEND_HEARTBEAT_ACTION";
     public static final String SEND_METRIC_ACTION = "SEND_METRIC_ACTION";

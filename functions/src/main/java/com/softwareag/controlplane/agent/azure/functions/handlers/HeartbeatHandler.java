@@ -22,7 +22,9 @@ import com.softwareag.controlplane.agentsdk.model.Heartbeat;
 import org.apache.commons.lang3.ObjectUtils;
 
 /**
- * Azure Functions with Timer trigger.
+ * This HeartbeatHandler class serves the send heartbeat action for the FAAS
+ * implementation.
+ * This class contains the method that will be invoked by Azure Functions.
  */
 public class HeartbeatHandler {
     private SendHeartbeatHandler sendHeartbeatHandler;
@@ -35,30 +37,29 @@ public class HeartbeatHandler {
     /**
      * Instantiates a new Heartbeat handler.
      *
-     * @throws SdkClientException the sdk client exception
-     * @throws IOException        the io exception
+     * @throws SdkClientException if there is an error in the AgentSDK client.
+     * @throws IOException        if an I/O error occurs during initialization.
      */
     public HeartbeatHandler() throws SdkClientException, IOException {
         init();
     }
 
     /**
-     * This function will be invoked periodically according to the specified schedule.
+     * This function will be invoked periodically according to the specified
+     * schedule.
      *
      * @param timerInfo the timer info
      * @param context   the context
      */
     @FunctionName("HeartbeatHandler")
     public void run(
-        @TimerTrigger(name = "timerInfo", schedule = "%APICP_SYNC_HEARTBEAT_INTERVAL_CRON%") String timerInfo,
-        final ExecutionContext context
-    ) {
-        if(Utils.isControlplaneActive(controlPlaneClient)) {
+            @TimerTrigger(name = "timerInfo", schedule = "%APICP_SYNC_HEARTBEAT_INTERVAL_CRON%") String timerInfo,
+            final ExecutionContext context) {
+        if (Utils.isControlplaneActive(controlPlaneClient)) {
             context.getLogger().info("Started heartbeat handler invocation");
             this.sendHeartbeatHandler.handle();
-        }
-        else
-            context.getLogger().log(Level.INFO,"ControlPlane is not available");
+        } else
+            context.getLogger().log(Level.INFO, "ControlPlane is not available");
 
         context.getLogger().info("Finished heartbeat handler invocation");
     }
@@ -70,7 +71,7 @@ public class HeartbeatHandler {
         Utils.authenticate(managerHolder);
         ControlPlaneConfig controlPlaneConfig = Utils.getControlPlaneConfig();
         runtimeConfig = Utils.getRuntimeConfig(this.managerHolder);
-        controlPlaneClient = Utils.getControlplaneClient(controlPlaneConfig,runtimeConfig);
+        controlPlaneClient = Utils.getControlplaneClient(controlPlaneConfig, runtimeConfig);
         managerHolder.setRestControlPlaneClient(controlPlaneClient);
         sdkConfig = Utils.getSdkConfig(controlPlaneConfig, runtimeConfig);
         this.logger = DefaultAgentLogger.getInstance(getClass());
@@ -82,19 +83,24 @@ public class HeartbeatHandler {
 
         // Runtime registration
         logger.info("Registering Runtime");
-        RuntimeRegistrationHandler registrationHandler = Utils.getRuntimeRegistrationHandler(controlPlaneClient, sdkConfig);
+        RuntimeRegistrationHandler registrationHandler = Utils.getRuntimeRegistrationHandler(controlPlaneClient,
+                sdkConfig);
         Object response = registrationHandler.handle();
 
         Long lastHeartbeatSyncTime = Utils.getLastActionSyncTime(response, Constants.SEND_HEARTBEAT_ACTION);
-        if(ObjectUtils.isNotEmpty(lastHeartbeatSyncTime)) {
+        if (ObjectUtils.isNotEmpty(lastHeartbeatSyncTime)) {
             Long currentTime = System.currentTimeMillis();
-            // If currentTime - interval is far greater than the lastHeartbeatSyncTime, we send inactive heartbeats for the missed intervals.
-            if(lastHeartbeatSyncTime < (currentTime - Long.parseLong(DefaultEnvProvider.getEnv(Constants.APICP_SYNC_HEARTBEAT_INTERVAL_SECONDS))*2))
+            // If currentTime - interval is far greater than the lastHeartbeatSyncTime, we
+            // send inactive heartbeats for the missed intervals.
+            if (lastHeartbeatSyncTime < (currentTime
+                    - Long.parseLong(DefaultEnvProvider.getEnv(Constants.APICP_SYNC_HEARTBEAT_INTERVAL_SECONDS)) * 2))
                 sendMissingHeartbeats(lastHeartbeatSyncTime, currentTime);
         }
 
     }
 
+    // This methods sends the generated inactive heartbeats to the controlplane to
+    // fill the missed intervals.
     private void sendMissingHeartbeats(Long lastSyncTime, Long currentTime) {
         List<Heartbeat> heartbeats = getInactiveHeartbeats(lastSyncTime, currentTime,
                 this.sdkConfig.getHeartbeatInterval());
@@ -105,6 +111,7 @@ public class HeartbeatHandler {
         }
     }
 
+    // This method generates inactive heartbeats for the given interval.
     private List<Heartbeat> getInactiveHeartbeats(long fromTime, long toTime, long syncInterval) {
         List<Heartbeat> heartbeats = new ArrayList<>();
 
@@ -115,7 +122,7 @@ public class HeartbeatHandler {
                     .created(currentTime)
                     .build();
             heartbeats.add(heartbeat);
-            currentTime += (syncInterval*1000);
+            currentTime += (syncInterval * 1000);
         }
         return heartbeats;
     }

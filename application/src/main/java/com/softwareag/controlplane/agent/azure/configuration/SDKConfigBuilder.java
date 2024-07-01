@@ -49,56 +49,9 @@ public class SDKConfigBuilder {
      * @return the sdk config
      */
     public SdkConfig sdkConfig() {
-        TlsConfig tlsConfig = new TlsConfig
-                .Builder(agentProperties.getTrustStorePath(), agentProperties.getTrustStoreType())
-                .truststorePassword(agentProperties.getTrustStorePassword())
-                .keystorePath(ObjectUtils.isNotEmpty(agentProperties.getKeyStorePath()) ?
-                        agentProperties.getKeyStorePath() : null)
-                .keystorePassword(ObjectUtils.isNotEmpty(agentProperties.getKeyStorePassword()) ?
-                        agentProperties.getKeyStorePassword() : null)
-                .keyAlias(ObjectUtils.isNotEmpty(agentProperties.getKeyAlias()) ? agentProperties.getKeyAlias() : null)
-                .keyPassword(ObjectUtils.isNotEmpty(agentProperties.getKeyPassword()) ? agentProperties.getKeyPassword() : null)
-                .keystoreType(ObjectUtils.isNotEmpty(agentProperties.getKeyStoreType()) ? agentProperties.getKeyStoreType() : null)
-                .build();
+        ControlPlaneConfig controlPlaneConfig = SDKConfigUtil.controlPlaneConfig(agentProperties);
 
-        Location location = managerHolder.getAzureResourceManager().subscriptions()
-                .getById(azureProperties.getSubscriptionId())
-                .getLocationByRegion(Region.fromName(managerHolder.getApiService().regionName()));
-
-        AuthConfig authConfig;
-        if(ObjectUtils.isNotEmpty(agentProperties.getToken())) {
-             authConfig = new AuthConfig
-                    .Builder(agentProperties.getToken())
-                    .build();
-        } else {
-             authConfig = new AuthConfig
-                    .Builder(agentProperties.getUsername(), agentProperties.getPassword())
-                    .build();
-        }
-
-        ControlPlaneConfig controlPlaneConfig = new ControlPlaneConfig.Builder()
-                .url(agentProperties.getUrl())
-                .authConfig(authConfig)
-                .tlsConfig(agentProperties.isSslEnabled() && !agentProperties.getTrustStorePath().isEmpty() && !agentProperties.getTrustStorePassword().isEmpty() ? tlsConfig : null)
-                .build();
-
-        Capacity capacity = null;
-        if(ObjectUtils.isNotEmpty(runtimeProperties.getCapacityValue())) {
-            capacity = new Capacity();
-            capacity.setUnit(Capacity.TimeUnit.valueOf(runtimeProperties.getCapacityUnit()));
-            capacity.setValue(Long.parseLong(runtimeProperties.getCapacityValue()));
-        }
-        // runtime ID = subscriptionId_serviceName
-        String runtimeId =
-                azureProperties.getSubscriptionId() + Constants.UNDERSCORE + azureProperties.getApiManagementServiceName();
-        RuntimeConfig runtimeConfig = new RuntimeConfig.Builder(runtimeId,
-                azureProperties.getApiManagementServiceName(), runtimeProperties.getType(),
-                Runtime.DeploymentType.PUBLIC_CLOUD)
-                .region(managerHolder.getApiService().regionName())
-                .location(location.physicalLocation())
-                .tags(AzureAgentUtil.convertTags(managerHolder.getApiService().tags()))
-                .capacity(capacity)
-                .build();
+        RuntimeConfig runtimeConfig = SDKConfigUtil.runtimeConfig(azureProperties,runtimeProperties,managerHolder);
 
         SdkHttpClient httpClient = new DefaultHttpClient.Builder()
                     .tlsConfig(controlPlaneConfig.getTlsConfig())
@@ -121,6 +74,22 @@ public class SDKConfigBuilder {
                 .metricsSendInterval(agentProperties.getSyncMetricsIntervalSeconds())
                 .logLevel(Level.valueOf(ObjectUtils.isEmpty(agentProperties.getLogLevel()) ?
                         "ALL" : agentProperties.getLogLevel()))
+                .build();
+    }
+
+    public ControlPlaneClient controlPlaneClient(){
+        ControlPlaneConfig controlPlaneConfig = SDKConfigUtil.controlPlaneConfig(agentProperties);
+
+        RuntimeConfig runtimeConfig = SDKConfigUtil.runtimeConfig(azureProperties,runtimeProperties,managerHolder);
+
+        SdkHttpClient httpClient = new DefaultHttpClient.Builder()
+                .tlsConfig(controlPlaneConfig.getTlsConfig())
+                .connectionConfig(controlPlaneConfig.getConnectionConfig())
+                .build();
+        return new RestControlPlaneClient.Builder()
+                .runtimeConfig(runtimeConfig)
+                .controlPlaneConfig(controlPlaneConfig)
+                .httpClient(httpClient)
                 .build();
     }
 

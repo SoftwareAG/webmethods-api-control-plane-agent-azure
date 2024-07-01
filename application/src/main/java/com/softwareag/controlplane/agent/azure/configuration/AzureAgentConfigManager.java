@@ -2,6 +2,7 @@ package com.softwareag.controlplane.agent.azure.configuration;
 
 import com.softwareag.controlplane.agent.azure.common.context.AzureManagersHolder;
 import com.softwareag.controlplane.agent.azure.common.handlers.assets.AssetManager;
+import com.softwareag.controlplane.agent.azure.common.handlers.assets.PolicyRetriever;
 import com.softwareag.controlplane.agent.azure.common.handlers.heartbeat.HeartbeatManager;
 import com.softwareag.controlplane.agent.azure.common.handlers.metrics.MetricsManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,5 +58,11 @@ public class AzureAgentConfigManager {
     @Bean
     public AzureManagersHolder azureManagersHolder() {
         return AzureManagersHolder.getInstance();
+    }
+
+
+    @Bean
+    public PolicyRetriever policyRetriever(){
+        return PolicyRetriever.getInstance(azureProperties.getResourceGroup(),azureProperties.getApiManagementServiceName());
     }
 }

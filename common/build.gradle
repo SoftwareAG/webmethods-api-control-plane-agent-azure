@@ -20,12 +20,6 @@ dependencies {
     testImplementation rootProject.junit
 }
 
-configurations {
-    all {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
-}
-
 test {
     useJUnitPlatform()
 }
@@ -39,13 +33,10 @@ task copyJar(type: Copy) {
     from jar    // here it automatically reads jar file produced from jar task
     into '../libs'
 }
-
 build.dependsOn copyJar
 
 /** for gradle version greater than 8 below statetements to be uncommented and used instead of above statement
  build.mustRunAfter copyJar
  compileTestJava.mustRunAfter copyJar
  compileJava.mustRunAfter copyJar
- */
-
-
+  */

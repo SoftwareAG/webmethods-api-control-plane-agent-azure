@@ -1,13 +1,16 @@
 package com.softwareag.controlplane.agent.azure.context;
 
 import com.softwareag.controlplane.agent.azure.common.constants.Constants;
+import com.softwareag.controlplane.agent.azure.common.handlers.assets.PolicyRetriever;
 import com.softwareag.controlplane.agent.azure.configuration.AgentProperties;
 import com.softwareag.controlplane.agent.azure.configuration.AzureProperties;
 import com.softwareag.controlplane.agent.azure.configuration.SDKConfigBuilder;
 import com.softwareag.controlplane.agentsdk.api.AgentSDKContextManual;
 import com.softwareag.controlplane.agentsdk.api.SdkLogger;
+import com.softwareag.controlplane.agentsdk.api.client.ControlPlaneClient;
 import com.softwareag.controlplane.agentsdk.api.client.http.SdkHttpClient;
 import com.softwareag.controlplane.agentsdk.api.config.SdkConfig;
+import com.softwareag.controlplane.agentsdk.core.log.DefaultAgentLogger;
 import com.softwareag.controlplane.agentsdk.model.API;
 import com.softwareag.controlplane.agentsdk.model.Asset;
 import com.softwareag.controlplane.agentsdk.model.AssetSyncAction;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Objects;
 
+
 /**
  * This is the implementation that retrieves the Runtime resources. This take care of everything for retrieving the data from the API Runtime.
  */
@@ -29,22 +33,25 @@ import java.util.Objects;
 public class AzureAgentManualContextImpl implements AgentSDKContextManual {
 
     @Autowired
-    SDKConfigBuilder sdkConfigBuilder;
+    private SDKConfigBuilder sdkConfigBuilder;
 
     @Autowired
-    AzureProperties azureProperties;
+    private AzureProperties azureProperties;
 
     @Autowired
-    AgentProperties agentProperties;
+    private AgentProperties agentProperties;
 
     @Autowired
-    AssetManager assetManager;
+    private AssetManager assetManager;
 
     @Autowired
-    MetricsManager metricsManager;
+    private MetricsManager metricsManager;
 
     @Autowired
-    HeartbeatManager heartbeatManager;
+    private HeartbeatManager heartbeatManager;
+
+    @Autowired
+    private PolicyRetriever policyRetriever;
 
     @Override
     public Heartbeat getHeartbeat() {
@@ -54,18 +61,29 @@ public class AzureAgentManualContextImpl implements AgentSDKContextManual {
 
     @Override
     public List<API> getAPIs() {
-        return assetManager.retrieveAPIs(true,azureProperties.getSubscriptionId(), agentProperties.getUsername());
+        /* The Executors are used here to calculate policy count from different levels such as
+         API, Operation, ALL APIS(Global) and Product level policies.
+            To ensure this activity doesn't affect the agent performance,
+            sync of policy count is scheduled at 15 minutes delay.
+            In the meantime, we expect APIs to be published into Control plane.
+         */
+        Thread policyCountThread = new Thread(() -> assetManager.apiPolicyCountDispatch(azureProperties.getSubscriptionId(), agentProperties.getUsername(), sdkConfigBuilder.controlPlaneClient()));
+        policyCountThread.start();
+
+        return assetManager.retrieveAPIs(true, azureProperties.getSubscriptionId(), agentProperties.getUsername(), false);
     }
+
 
     @Override
     public List<Metrics> getMetrics(long fromTimestamp, long toTimestamp, long interval) {
-        if(Objects.equals(azureProperties.getMetricsByRequestsOrInsights(), Constants.METRICS_BY_REQUESTS)) return metricsManager.metricsRetrieverByRequests(fromTimestamp, toTimestamp, azureProperties.getMetricsSyncBufferIntervalMinutes());
-        return metricsManager.metricsRetrieverByInsights(fromTimestamp,toTimestamp,interval,azureProperties.getMetricsSyncBufferIntervalMinutes());
+        if (Objects.equals(azureProperties.getMetricsByRequestsOrInsights(), Constants.METRICS_BY_REQUESTS))
+            return metricsManager.metricsRetrieverByRequests(fromTimestamp, toTimestamp, azureProperties.getMetricsSyncBufferIntervalMinutes());
+        return metricsManager.metricsRetrieverByInsights(fromTimestamp, toTimestamp, interval, azureProperties.getMetricsSyncBufferIntervalMinutes());
     }
 
     @Override
     public List<AssetSyncAction<Asset>> getAssetSyncActions(long fromTimestamp) {
-        return assetManager.getAPIUpdates(fromTimestamp,azureProperties.getSubscriptionId(), agentProperties.getUsername());
+        return assetManager.getAPIUpdates(fromTimestamp, azureProperties.getSubscriptionId(), agentProperties.getUsername());
     }
 
     @Override
