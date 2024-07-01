@@ -30,7 +30,7 @@ import com.azure.resourcemanager.resources.models.Location;
 import java.io.IOException;
 
 /**
- * The type Utils.
+ * Utilities class for FAAS implementation.
  */
 public class Utils {
     private Utils(){}

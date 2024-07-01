@@ -93,7 +93,7 @@ public class AzureAgentManualContextTests {
 
         List<API> apiList = new ArrayList<>();
         apiList.add(Mockito.mock(API.class));
-        when(assetManager.retrieveAPIs(anyBoolean(), any(), any())).thenReturn(apiList);
+        when(assetManager.retrieveAPIs(anyBoolean(), any(), any(), anyBoolean())).thenReturn(apiList);
 
 
         List<Metrics> metrics = new ArrayList<>();

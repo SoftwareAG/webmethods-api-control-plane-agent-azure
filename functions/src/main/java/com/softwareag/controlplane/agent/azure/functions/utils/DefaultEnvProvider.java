@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The type Default env provider.
+ * Provides default values of Environment variables for FAAS implementation.
  */
 public class DefaultEnvProvider {
     private DefaultEnvProvider(){}

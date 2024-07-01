@@ -27,8 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.clearAllCaches;
 import static org.mockito.Mockito.when;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -49,7 +48,7 @@ public class AssetManagerTests {
     @Test
     @Order(3)
     void retrieveApisTest() {
-        List<API> apiList = assetManager.retrieveAPIs(true, "test_subscription", "azure-user");
+        List<API> apiList = assetManager.retrieveAPIs(true, "test_subscription", "azure-user", false);
         assertFalse(apiList.isEmpty());
         assertEquals(apiList.get(0).getType(), API.Type.SOAP);
         assertEquals(apiList.get(0).getName(), "Hello API");
@@ -78,6 +77,14 @@ public class AssetManagerTests {
         assertFalse(assetSyncActions.isEmpty());
         assertEquals(assetSyncActions.size(),5);
         assertNotNull(CacheManager.getInstance().get(AssetType.API));
+    }
+
+    @Test
+    @Order(4)
+    void retrieveApiWithId() throws SdkClientException {
+        String azureApiId = "/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/a1";
+        API api = assetManager.retrieveAPIwithId(azureApiId,"test_subscription", "azure-user");
+        assertNotNull(api);
     }
 
     @BeforeEach
@@ -136,13 +143,11 @@ public class AssetManagerTests {
         when(azureManagersHolder.getAzureApiManager().apis().listByService(anyString(),
                 anyString()).stream()).thenReturn(apiContractsIterator.stream());
 
+        when(azureManagersHolder.getAzureApiManager().apis().getById(anyString())).thenReturn(apiContract);
+
         //mocking the policy count for the api
         when(policyRetriever.getPoliciesCount(any())).thenReturn(3);
         when(policyRetriever.getGlobalProductPolicyCount()).thenReturn(4);
-
-
-
-
 
     }
 

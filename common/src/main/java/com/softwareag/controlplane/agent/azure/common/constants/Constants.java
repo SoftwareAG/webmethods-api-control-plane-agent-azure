@@ -6,6 +6,8 @@ package com.softwareag.controlplane.agent.azure.common.constants;
  */
 public final class Constants {
 
+
+
     private Constants() {
     }
 
@@ -36,8 +38,7 @@ public final class Constants {
 
     public static final String METRICS_BY_INSIGHTS="insights";
 
-    public static final String CREATE = "CREATE";
-    public static final String UPDATE = "UPDATE";
-    public static final String DELETE = "DELETE";
+    public static final long SYNC_POLICY_COUNT_DELAY = 900000;
 
+    public static final String SYNC_POLICY_COUNT_THREAD_NAME = "PolicyCountUpdater";
 }
