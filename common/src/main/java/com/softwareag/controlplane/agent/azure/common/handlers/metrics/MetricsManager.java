@@ -1,3 +1,6 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure.common.handlers.metrics;
 
 import com.azure.core.http.rest.PagedIterable;
@@ -6,17 +9,17 @@ import com.azure.resourcemanager.apimanagement.models.ReportRecordContract;
 import com.azure.resourcemanager.apimanagement.models.RequestReportRecordContract;
 import com.softwareag.controlplane.agent.azure.common.constants.Constants;
 import com.softwareag.controlplane.agent.azure.common.context.AzureManagersHolder;
+import com.softwareag.controlplane.agentsdk.core.log.DefaultAgentLogger;
 import com.softwareag.controlplane.agentsdk.model.APIMetrics;
 import com.softwareag.controlplane.agentsdk.model.APITransactionMetrics;
 import com.softwareag.controlplane.agentsdk.model.Metrics;
 import com.softwareag.controlplane.agentsdk.model.RuntimeTransactionMetrics;
 import com.softwareag.controlplane.agent.azure.common.utils.AzureAgentUtil;
-
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * The  Metrics manager is to query Metrics from azure and sent to API Control Plane.
@@ -29,11 +32,14 @@ public class MetricsManager {
     private String apiManagementServiceName;
     private String subscriptionId;
 
+    private DefaultAgentLogger logger;
+
     private MetricsManager(String resourceGroup, String apiManagementServiceName, String subscriptionId) {
         this.azureManagersHolder = AzureManagersHolder.getInstance();
         this.resourceGroup = resourceGroup;
         this.apiManagementServiceName = apiManagementServiceName;
         this.subscriptionId = subscriptionId;
+        this.logger = DefaultAgentLogger.getInstance(this.getClass());
     }
 
     /**
@@ -56,6 +62,23 @@ public class MetricsManager {
 
     private Map<String, Map<String, List<RequestReportRecordContract>>> statusCodeByApiAzure ;
 
+    public List<Metrics> metricsTypeHandler(long fromTimestamp, long toTimestamp, long interval, int bufferIntervalMinutes, String metricsByRequestOrInsights){
+        List<Metrics> metrics = new ArrayList<>();
+        long currentStart = fromTimestamp;
+        while(currentStart<toTimestamp){
+            long currentEnd =  currentStart + (interval*1000);
+            if(currentEnd>toTimestamp) currentEnd =toTimestamp;
+
+            if(metricsByRequestOrInsights.equals("requests")){
+                metrics.add(metricsRetrieverByRequests(currentStart,currentEnd,bufferIntervalMinutes));
+            }
+            else {
+                metrics.add(metricsRetrieverByInsights(currentStart,currentEnd,interval,bufferIntervalMinutes));
+            }
+            currentStart=currentEnd;
+        }
+        return metrics;
+    }
     /**
      * Control plane Metrics retriever means analytics of api management service.
      * This method queries the azure SDK for all request using listByRequest method.
@@ -66,10 +89,7 @@ public class MetricsManager {
      * @param bufferIntervalMinutes     the metrics sync buffer interval in minutes
      * @return the list
      */
-    public List<Metrics> metricsRetrieverByRequests(long fromTimestamp, long toTimestamp,int bufferIntervalMinutes) {
-
-        List<Metrics> metrics = new ArrayList<>();
-
+    public Metrics metricsRetrieverByRequests(long fromTimestamp, long toTimestamp,int bufferIntervalMinutes) {
         int bufferIntervalSeconds = bufferIntervalMinutes*60;
         String startTime = AzureAgentUtil.filterTimeConversion(AzureAgentUtil.reduceTimeRange(fromTimestamp, bufferIntervalSeconds));
         String endTime = AzureAgentUtil.filterTimeConversion(AzureAgentUtil.reduceTimeRange(toTimestamp-1, bufferIntervalSeconds));
@@ -84,8 +104,8 @@ public class MetricsManager {
             runtimeTransactionMetrics = convertAsRuntimeMetrics();
             apiTransactionMetrics = convertAsAPITransMetrics();
         }
-        metrics.add(convertAsMetrics(runtimeTransactionMetrics, apiTransactionMetrics, toTimestamp));
-        return metrics;
+
+        return convertAsMetrics(runtimeTransactionMetrics, apiTransactionMetrics, toTimestamp);
     }
 
      /**
@@ -100,8 +120,16 @@ public class MetricsManager {
      * @param bufferIntervalMinutes     the metrics sync buffer interval in minutes
      * @return the list
      */
-    public List<Metrics> metricsRetrieverByInsights(long fromTimestamp, long toTimestamp, long interval,int bufferIntervalMinutes){
-        List<Metrics> metrics = new ArrayList<>();
+    public Metrics metricsRetrieverByInsights(long fromTimestamp, long toTimestamp, long interval,int bufferIntervalMinutes){
+        List<APITransactionMetrics> apiTransactionMetrics = new ArrayList<>();
+        RuntimeTransactionMetrics runtimeTransactionMetrics =null;
+
+        // If the time range is less than the configured interval, the time range will be ignored, and empty metrics object will be returned.
+        long intervalInMillis = interval * 1000;
+        long timeRange = toTimestamp - fromTimestamp;
+        if (timeRange < intervalInMillis) {
+            return convertAsMetrics(runtimeTransactionMetrics, apiTransactionMetrics, toTimestamp);
+        }
 
         int bufferIntervalSeconds = bufferIntervalMinutes*60;
         long bufferedFromTimestamp = AzureAgentUtil.reduceTimeRange(fromTimestamp, bufferIntervalSeconds);
@@ -115,15 +143,11 @@ public class MetricsManager {
 
         PagedIterable<ReportRecordContract> azureMetricsByAPI = azureManagersHolder.getAzureApiManager().reports().listByApi(this.resourceGroup, this.apiManagementServiceName, filter);
 
-        List<APITransactionMetrics> apiTransactionMetrics = new ArrayList<>();
-        RuntimeTransactionMetrics runtimeTransactionMetrics =null;
-
         if(azureMetricsByTime.stream().findAny().isPresent() && azureMetricsByAPI.stream().findAny().isPresent()){
             apiTransactionMetrics =aggregateReportToAPITransMetrics(azureMetricsByAPI);
             runtimeTransactionMetrics=aggregateReportToRuntimeMetrics(azureMetricsByTime);
         }
-        metrics.add(convertAsMetrics(runtimeTransactionMetrics, apiTransactionMetrics, toTimestamp));
-        return metrics;
+        return convertAsMetrics(runtimeTransactionMetrics, apiTransactionMetrics, toTimestamp);
     }
 
     private void statusMapPopulate(PagedIterable<RequestReportRecordContract> azureMetricsByRequests){
@@ -192,18 +216,21 @@ public class MetricsManager {
                 });
 
                 APIMetrics apiMetrics = createAPIMetrics(totalApiCallCount[0], totalApiTime[0] / totalApiCallCount[0], totalServiceTime[0] / totalApiCallCount[0]);
-                ApiContract apiVersionContract = azureManagersHolder.getAzureApiManager().apis().get(this.resourceGroup,
-                        this.apiManagementServiceName,
-                        apiId.substring(6));
+                //API details will be retrieved from the Azure Portal. If the API is not found, the metric details for that API will be skipped.
+                try{
+                    ApiContract apiVersionContract = azureManagersHolder.getAzureApiManager().apis().get(this.resourceGroup,
+                            this.apiManagementServiceName,
+                            apiId.substring(6));
+                    APITransactionMetrics apiTransMetrics = (APITransactionMetrics) new APITransactionMetrics
+                            .Builder(apiMetrics, constructAPIId, apiVersionContract.name(),
+                            apiVersionContract.apiVersion() == null ? Constants.ORIGINAL_VERSION : apiVersionContract.apiVersion())
+                            .metricsByStatusCode(metricsByStatusCode)
+                            .build();
+                    apiTransMetricsList.add(apiTransMetrics);
+                }catch(Exception e){
+                    logger.info("Exception occurred during API transaction retrieval");
+                }
 
-
-                APITransactionMetrics apiTransMetrics = (APITransactionMetrics) new APITransactionMetrics
-                        .Builder(apiMetrics, constructAPIId, apiVersionContract.name(),
-                        apiVersionContract.apiVersion() == null ? Constants.ORIGINAL_VERSION : apiVersionContract.apiVersion())
-                        .metricsByStatusCode(metricsByStatusCode)
-                        .build();
-
-                apiTransMetricsList.add(apiTransMetrics);
             }
 
         });
@@ -231,15 +258,18 @@ public class MetricsManager {
                 APIMetrics apiMetrics = createAPIMetrics(metricByApi.callCountTotal(), metricByApi.apiTimeAvg(), metricByApi.serviceTimeAvg());
 
                 Map<String, APIMetrics> metricsByStatusCode = new HashMap<>();
-
-                ApiContract apiVersionContract = azureManagersHolder.getAzureApiManager().apis().get(this.resourceGroup, this.apiManagementServiceName, metricByApi.apiId().substring(6));
-                APITransactionMetrics apiTransMetrics = (APITransactionMetrics) new APITransactionMetrics
-                        .Builder(apiMetrics, constructAPIId, apiVersionContract.name(),
-                         apiVersionContract.apiVersion() == null ? Constants.ORIGINAL_VERSION : apiVersionContract.apiVersion())
-                        .metricsByStatusCode(metricsByStatusCode)
-                        .build();
-
-                apiTransMetricsList.add(apiTransMetrics);
+                try{
+                    ApiContract apiVersionContract = azureManagersHolder.getAzureApiManager().apis().get(this.resourceGroup, this.apiManagementServiceName, metricByApi.apiId().substring(6));
+                    APITransactionMetrics apiTransMetrics = (APITransactionMetrics) new APITransactionMetrics
+                            .Builder(apiMetrics, constructAPIId, apiVersionContract.name(),
+                            apiVersionContract.apiVersion() == null ? Constants.ORIGINAL_VERSION : apiVersionContract.apiVersion())
+                            .metricsByStatusCode(metricsByStatusCode)
+                            .build();
+                    apiTransMetricsList.add(apiTransMetrics);
+                }
+                catch (Exception e){
+                   logger.info("Exception occurred during API transaction retrieval");
+                }
             }
         });
         return apiTransMetricsList;

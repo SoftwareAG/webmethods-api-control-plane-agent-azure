@@ -1,3 +1,6 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure.context;
 
 import com.azure.core.management.Region;
@@ -98,8 +101,8 @@ public class AzureAgentManualContextTests {
 
         List<Metrics> metrics = new ArrayList<>();
         metrics.add(Mockito.mock(Metrics.class));
+        when(metricsManager.metricsTypeHandler(anyLong(),anyLong(),anyLong(),anyInt(),any())).thenReturn(metrics);
 
-        when(metricsManager.metricsRetrieverByRequests(anyLong(),anyLong(),anyInt())).thenReturn(metrics);
         List<AssetSyncAction<Asset>> apiListUpdates = new ArrayList<>();
         when(assetManager.getAPIUpdates(anyLong(), any(), any())).thenReturn(apiListUpdates);
     }

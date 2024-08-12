@@ -1,3 +1,6 @@
+<!--
+  Copyright Super iPaaS Integration LLC, an IBM Company 2024
+-->
 ## Customize the Implementation Logic for Retrieval of Heartbeats, APIs, and Metrics from the Azure API Management Service
 
 The **Common** directory contains the shared code utilized by both the Spring Boot application and Lambda functions.

@@ -1,3 +1,6 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure.functions.retrievers;
 
 import com.softwareag.controlplane.agent.azure.common.handlers.metrics.MetricsManager;
@@ -26,24 +29,15 @@ public class MetricsRetrieverImpl implements SendMetricsHandler.MetricsRetriever
      */
     @Override
     public List<Metrics> getMetrics(long l, long l1, long l2) {
-        if (DefaultEnvProvider.getEnv(Constants.AZURE_METRICS_BY_REQUESTS_OR_INSIGHTS).equals(Constants.REQUESTS)) {
             return MetricsManager
                     .getInstance(DefaultEnvProvider.getEnv(Constants.AZURE_RESOURCE_GROUP),
                             DefaultEnvProvider.getEnv(Constants.AZURE_API_MANAGEMENT_SERVICE_NAME),
-                            DefaultEnvProvider.getEnv(Constants.AZURE_TENANT_ID))
-                    .metricsRetrieverByRequests(l, l1, Integer
-                            .parseInt(DefaultEnvProvider.getEnv(Constants.AZURE_METRICS_SYNC_BUFFER_INTERVAL_MINUTES)));
-        } else if (DefaultEnvProvider.getEnv(Constants.AZURE_METRICS_BY_REQUESTS_OR_INSIGHTS)
-                .equals(Constants.INSIGHTS)) {
-            return MetricsManager
-                    .getInstance(DefaultEnvProvider.getEnv(Constants.AZURE_RESOURCE_GROUP),
-                            DefaultEnvProvider.getEnv(Constants.AZURE_API_MANAGEMENT_SERVICE_NAME),
-                            DefaultEnvProvider.getEnv(Constants.AZURE_TENANT_ID))
-                    .metricsRetrieverByInsights(l, l1,
+                            DefaultEnvProvider.getEnv(Constants.AZURE_SUBSCRIPTION_ID))
+                    .metricsTypeHandler(l, l1,
                             Long.parseLong(DefaultEnvProvider.getEnv(Constants.APICP_SYNC_METRICS_INTERVAL_SECONDS)),
-                            Integer.parseInt(
-                                    DefaultEnvProvider.getEnv(Constants.AZURE_METRICS_SYNC_BUFFER_INTERVAL_MINUTES)));
-        }
-        return Collections.emptyList();
+                            Integer.parseInt(DefaultEnvProvider.getEnv(Constants.AZURE_METRICS_SYNC_BUFFER_INTERVAL_MINUTES)),
+                            DefaultEnvProvider.getEnv(Constants.AZURE_METRICS_BY_REQUESTS_OR_INSIGHTS)
+                            );
+
     }
 }

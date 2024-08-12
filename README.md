@@ -1,3 +1,6 @@
+<!--
+  Copyright Super iPaaS Integration LLC, an IBM Company 2024
+-->
 # **webMethods API Control Plane Agent for Azure API Management Service**
 
 ![Version 1.0.0](https://img.shields.io/badge/Version-1.0.0-blue)

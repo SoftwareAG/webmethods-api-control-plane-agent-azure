@@ -1,44 +1,44 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 ext {
-    jacksonVersion = '2.15.2'
-    micrometerVersion = '1.11.3'
-    log4jVersion = '2.22.0'
-    nettyVersion = '4.1.97.Final'
-    nettyCodecVersion = '4.1.100.Final'
-    nettyHandlerVersion = '4.1.101.Final'
-    springVersion = '6.0.14'
-    springSecurityVersion = '6.1.3'
-    springBootVersion = '3.1.3'
-    junitPlatformVersion = '1.9.3'
-    junitJupiterVersion = '5.9.3'
-    junitMockitoVersion = '5.3.1'
-    bytebuddyVersion = '1.14.6'
-    apacheCommonsLang3Version = '3.12.0'
-    apacheLog4jTemplateVersion = '2.20.0'
+    jacksonVersion = '2.17.1'
+    micrometerVersion = '1.13.1'
+    log4jVersion = '2.23.1'
+    nettyVersion = '4.1.111.Final'
+
+
+    springVersion = '6.1.10'
+    springSecurityVersion = '6.3.1'
+    springBootVersion = '3.3.1'
+    junitPlatformVersion = '1.10.2'
+    junitJupiterVersion = '5.10.2'
+    junitMockitoVersion = '5.11.0'
+    bytebuddyVersion = '1.14.17'
+    apacheCommonsLang3Version = '3.14.0'
+    apacheLog4jTemplateVersion = '2.23.1'
     azureSdkVersion = '1.0.0-beta.4'
     azureSubscriptionVersion = '1.0.0-beta.2'
-    azureIdentityVersion = '1.12.1'
-    azureMonitorVersion = '1.2.7'
-    azureResourceManagerVersion = '2.38.0'
-    azureMsal4jVersion = '1.15.0'
+    azureIdentityVersion = '1.13.1'
+    azureMonitorVersion = '1.4.0'
+    azureResourceManagerVersion = '2.40.0'
+    azureMsal4jVersion = '1.16.1'
+
     azureJsonVersion = '1.1.0'
-    azureCoreVersion = '1.49.0'
-    azureJnaVersion= '5.6.0'
-    azureMsal4jExtVersion= '1.3.0'
-    tomcatVersion = '10.1.16'
-    junitPlatformVersion = '1.9.3'
-    junitJupiterVersion = '5.9.3'
-    junitMockitoVersion = '5.3.1'
-
-
+    azureCoreVersion = '1.50.0'
+    netJnaVersion = '5.14.0'
+    azureMsal4jExtVersion = '1.3.0'
+    azureCoreHttpNetty = '1.15.2'
+    tomcatVersion = '10.1.25'
 
     apache = [
             "org.apache.commons:commons-lang3:$apacheCommonsLang3Version",
-            'commons-codec:commons-codec:1.11',
+            'commons-codec:commons-codec:1.16.1',
             "org.apache.logging.log4j:log4j-layout-template-json:$apacheLog4jTemplateVersion",
     ]
 
     json = [
-            'org.json:json:20231013'
+            'org.json:json:20240303'
     ]
 
     azureApiManagement = [
@@ -53,15 +53,27 @@ ext {
             "com.azure:azure-identity:$azureIdentityVersion",
     ]
 
+    azureDependency = [
+            "com.azure.resourcemanager:azure-resourcemanager-apimanagement:$azureSdkVersion",
+            "com.azure.resourcemanager:azure-resourcemanager-subscription:$azureSubscriptionVersion",
+            "com.azure:azure-identity:$azureIdentityVersion",
+            "com.azure.resourcemanager:azure-resourcemanager-resources:$azureResourceManagerVersion",
+            "com.azure:azure-monitor-query:$azureMonitorVersion",
+    ]
+
     azureTranstiveDependency = [
+
             'asm:asm:3.3.1',
             'net.minidev:asm:1.0.2',
             "com.microsoft.azure:msal4j:$azureMsal4jVersion",
-            "com.azure:azure-core-http-netty:$azureMsal4jVersion",
+            "com.azure:azure-core-http-netty:$azureCoreHttpNetty",
             "com.azure:azure-json:$azureJsonVersion",
             "com.azure:azure-core:$azureCoreVersion",
-            "net.java.dev.jna:jna-platform:$azureJnaVersion",
+            "net.java.dev.jna:jna-platform:$netJnaVersion",
             "com.microsoft.azure:msal4j-persistence-extension:$azureMsal4jExtVersion",
+
+
+
 
     ]
 
@@ -74,18 +86,10 @@ ext {
     ]
 
     jakartaJavax = [
-            'jakarta.validation:jakarta.validation-api:3.0.2',
-            'jakarta.el:jakarta.el-api:5.0.1',
-            'javax.el:javax.el-api:2.2.4',
-            'org.glassfish.web:javax.el:2.2.4',
-    ]
-
-    azureDependency = [
-            "com.azure.resourcemanager:azure-resourcemanager-apimanagement:$azureSdkVersion",
-            "com.azure.resourcemanager:azure-resourcemanager-subscription:$azureSubscriptionVersion",
-            "com.azure:azure-identity:$azureIdentityVersion",
-            "com.azure.resourcemanager:azure-resourcemanager-resources:$azureResourceManagerVersion",
-            "com.azure:azure-monitor-query:$azureMonitorVersion",
+            'jakarta.validation:jakarta.validation-api:3.1.0',
+            'jakarta.el:jakarta.el-api:6.0.1',
+            'javax.el:javax-el-api:3.0.0',
+            'org.glassfish.web:javax.el:2.2.6',
     ]
 
     springBoot = [
@@ -119,7 +123,6 @@ ext {
             "org.springframework:spring-tx:$springVersion",
     ]
 
-
     springBootAnnotationProcessor = [
             "org.springframework.boot:spring-boot-configuration-processor:$springBootVersion"
     ]
@@ -141,7 +144,7 @@ ext {
     ]
 
     log4j = [
-            "org.slf4j:slf4j-api:2.0.9",
+            "org.slf4j:slf4j-api:2.0.13",
             "org.apache.logging.log4j:log4j-core:$log4jVersion",
             "org.apache.logging.log4j:log4j-api:$log4jVersion",
             "org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion",
@@ -159,10 +162,10 @@ ext {
             "io.netty:netty-buffer:$nettyVersion",
             "io.netty:netty-transport:$nettyVersion",
             "io.netty:netty-resolver:$nettyVersion",
-            "io.netty:netty-codec:$nettyCodecVersion",
-            "io.netty:netty-handler:$nettyHandlerVersion",
+            "io.netty:netty-codec:$nettyVersion",
+            "io.netty:netty-handler:$nettyVersion",
             "io.netty:netty-transport-native-unix-common:$nettyVersion",
-            "io.netty:netty-codec-http2:$nettyCodecVersion",
+            "io.netty:netty-codec-http2:$nettyVersion",
             "io.netty:netty-resolver-dns:$nettyVersion",
             "io.netty:netty-codec-dns:$nettyVersion",
             "io.netty:netty-resolver-dns-native-macos:$nettyVersion",
@@ -174,15 +177,15 @@ ext {
     ]
 
     reactor = [
-            "io.projectreactor.netty:reactor-netty:1.0.33",
-            "io.projectreactor:reactor-core:3.5.9",
+            "io.projectreactor.netty:reactor-netty:1.1.21",
+            "io.projectreactor:reactor-core:3.6.8",
             "org.reactivestreams:reactive-streams:1.0.4",
-            "io.projectreactor.netty:reactor-netty-http:1.1.13",
-            "io.projectreactor.netty:reactor-netty-core:1.1.10",
+            "io.projectreactor.netty:reactor-netty-http:1.1.21",
+            "io.projectreactor.netty:reactor-netty-core:1.1.21",
     ]
 
     azureFunctions = [
-            "com.microsoft.azure.functions:azure-functions-java-library:3.0.0",
+            "com.microsoft.azure.functions:azure-functions-java-library:3.1.0",
             "org.springframework.boot:spring-boot-starter-validation:$springBootVersion",
             "org.springframework:spring-core:$springVersion",
             "org.springframework:spring-context:$springVersion",
@@ -190,12 +193,12 @@ ext {
             "org.apache.commons:commons-lang3:$apacheCommonsLang3Version",
             "org.apache.logging.log4j:log4j-layout-template-json:$apacheLog4jTemplateVersion",
             json,
-            'org.jboss.logging:jboss-logging:3.5.3.Final',
-            'com.nimbusds:oauth2-oidc-sdk:11.9.1',
-            'net.minidev:json-smart:2.3',
-            'com.nimbusds:nimbus-jose-jwt:9.39.2',
-            'com.nimbusds:content-type:2.3'
 
+            'org.jboss.logging:jboss-logging:3.6.0.Final',
+            'com.nimbusds:oauth2-oidc-sdk:11.13',
+            'net.minidev:json-smart:2.5.1',
+            'com.nimbusds:nimbus-jose-jwt:9.40',
+            'com.nimbusds:content-type:2.3'
     ]
 
     springBootApplication = [
@@ -217,10 +220,9 @@ ext {
             spring,
     ]
 
-
     //Do not add this for external repo
     transitiveDependencies = [
-            "org.springframework.data:spring-data-commons:3.0.6",
+            "org.springframework.data:spring-data-commons:3.3.1",
 
             //springframework - security
             "org.springframework.security:spring-security-config:$springSecurityVersion",
@@ -233,25 +235,25 @@ ext {
             "org.apache.tomcat.embed:tomcat-embed-el:$tomcatVersion",
             "org.apache.tomcat.embed:tomcat-embed-websocket:$tomcatVersion",
 
-            'org.yaml:snakeyaml:1.33',
+            'org.yaml:snakeyaml:2.2',
             'com.google.code.findbugs:jsr305:3.0.2',
-            'org.jboss.logging:jboss-logging:3.5.3.Final',
-            'jakarta.json:jakarta.json-api:2.1.2',
-            'jakarta.activation:jakarta.activation-api:2.1.1',
+            'org.jboss.logging:jboss-logging:3.6.0.Final',
+            'jakarta.json:jakarta.json-api:2.1.3',
+            'jakarta.activation:jakarta.activation-api:2.1.3',
             'jakarta.annotation:jakarta.annotation-api:2.1.1',
             'org.apache.httpcomponents:httpasyncclient:4.1.5',
             'org.apache.httpcomponents:httpcore-nio:4.4.16',
             'org.hibernate.validator:hibernate-validator:8.0.1.Final',
-            'com.google.guava:guava:28.1-jre',
+            'com.google.guava:guava:33.0.0-jre',
             'commons-logging:commons-logging:1.2',
-            'com.fasterxml:classmate:1.5.1',
-            'org.hdrhistogram:HdrHistogram:2.1.12',
+            'com.fasterxml:classmate:1.7.0',
+            'org.hdrhistogram:HdrHistogram:2.2.2',
     ]
 
     junit = [
             "org.junit.platform:junit-platform-commons:${junitPlatformVersion}",
             "org.junit.platform:junit-platform-engine:${junitPlatformVersion}",
-            "org.opentest4j:opentest4j:1.2.0",
+            "org.opentest4j:opentest4j:1.3.0",
             "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}",
             "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}",
             "org.mockito:mockito-junit-jupiter:${junitMockitoVersion}",
@@ -261,7 +263,7 @@ ext {
             "net.bytebuddy:byte-buddy-agent:${bytebuddyVersion}",
 
             'commons-logging:commons-logging:1.2',
-            'org.apiguardian:apiguardian-api:1.0.0',
+            'org.apiguardian:apiguardian-api:1.1.2',
             "org.springframework.boot:spring-boot-starter-test:${springBootVersion}",
 
     ]

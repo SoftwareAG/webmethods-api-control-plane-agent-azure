@@ -1,16 +1,17 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure.context;
 
-import com.softwareag.controlplane.agent.azure.common.constants.Constants;
+
 import com.softwareag.controlplane.agent.azure.common.handlers.assets.PolicyRetriever;
 import com.softwareag.controlplane.agent.azure.configuration.AgentProperties;
 import com.softwareag.controlplane.agent.azure.configuration.AzureProperties;
 import com.softwareag.controlplane.agent.azure.configuration.SDKConfigBuilder;
 import com.softwareag.controlplane.agentsdk.api.AgentSDKContextManual;
 import com.softwareag.controlplane.agentsdk.api.SdkLogger;
-import com.softwareag.controlplane.agentsdk.api.client.ControlPlaneClient;
 import com.softwareag.controlplane.agentsdk.api.client.http.SdkHttpClient;
 import com.softwareag.controlplane.agentsdk.api.config.SdkConfig;
-import com.softwareag.controlplane.agentsdk.core.log.DefaultAgentLogger;
 import com.softwareag.controlplane.agentsdk.model.API;
 import com.softwareag.controlplane.agentsdk.model.Asset;
 import com.softwareag.controlplane.agentsdk.model.AssetSyncAction;
@@ -23,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Objects;
+
 
 
 /**
@@ -76,16 +77,13 @@ public class AzureAgentManualContextImpl implements AgentSDKContextManual {
 
     @Override
     public List<Metrics> getMetrics(long fromTimestamp, long toTimestamp, long interval) {
-        if (Objects.equals(azureProperties.getMetricsByRequestsOrInsights(), Constants.METRICS_BY_REQUESTS))
-            return metricsManager.metricsRetrieverByRequests(fromTimestamp, toTimestamp, azureProperties.getMetricsSyncBufferIntervalMinutes());
-        return metricsManager.metricsRetrieverByInsights(fromTimestamp, toTimestamp, interval, azureProperties.getMetricsSyncBufferIntervalMinutes());
+        return metricsManager.metricsTypeHandler(fromTimestamp,toTimestamp,interval,azureProperties.getMetricsSyncBufferIntervalMinutes(),azureProperties.getMetricsByRequestsOrInsights());
     }
 
     @Override
     public List<AssetSyncAction<Asset>> getAssetSyncActions(long fromTimestamp) {
         return assetManager.getAPIUpdates(fromTimestamp, azureProperties.getSubscriptionId(), agentProperties.getUsername());
     }
-
     @Override
     public SdkConfig getSdkConfig() {
         return sdkConfigBuilder.sdkConfig();

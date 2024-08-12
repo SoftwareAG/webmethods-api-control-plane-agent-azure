@@ -1,3 +1,6 @@
+<!--
+  Copyright Super iPaaS Integration LLC, an IBM Company 2024
+-->
 
 ## How to Create and Deploy Java Function in Azure using Azure CLI and Visual Studio Code Editor?
 

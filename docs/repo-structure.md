@@ -1,3 +1,6 @@
+<!--
+  Copyright Super iPaaS Integration LLC, an IBM Company 2024
+-->
 
 ## How is this repository structured?
 

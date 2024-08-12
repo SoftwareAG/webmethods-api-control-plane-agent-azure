@@ -1,3 +1,6 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure;
 
 import com.softwareag.controlplane.agent.azure.configuration.AgentProperties;

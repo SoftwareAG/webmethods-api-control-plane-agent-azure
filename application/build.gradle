@@ -1,8 +1,9 @@
-
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.1.6'
-	id 'io.spring.dependency-management' version '1.1.4'
 	id "io.freefair.lombok" version "6.4.3"
 	id "io.freefair.aggregate-javadoc" version "6.4.3"
 }
@@ -15,6 +16,12 @@ java {
 }
 
 repositories {
+}
+
+configurations {
+	all {
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+	}
 }
 
 dependencies {
@@ -38,12 +45,6 @@ tasks.named('bootJar') {
 
 bootRun {
 
-}
-
-configurations {
-	all {
-		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-	}
 }
 
 test {

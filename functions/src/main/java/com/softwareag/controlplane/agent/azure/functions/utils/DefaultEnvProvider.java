@@ -1,3 +1,6 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure.functions.utils;
 
 import com.softwareag.controlplane.agent.azure.functions.utils.constants.Constants;
@@ -16,12 +19,11 @@ public class DefaultEnvProvider {
     static {
         DEFAULT_VALUES.put(Constants.AZURE_METRICS_SYNC_BUFFER_INTERVAL_MINUTES,"15");
         DEFAULT_VALUES.put(Constants.AZURE_METRICS_BY_REQUESTS_OR_INSIGHTS,"requests");
-        DEFAULT_VALUES.put(Constants.APICP_SYNC_ASSETS_INTERVAL_SECONDS,"60");
+        DEFAULT_VALUES.put(Constants.APICP_SYNC_ASSETS_INTERVAL_SECONDS,"300");
         DEFAULT_VALUES.put(Constants.APICP_SYNC_HEARTBEAT_INTERVAL_SECONDS,"60");
         DEFAULT_VALUES.put(Constants.APICP_SYNC_METRICS_INTERVAL_SECONDS,"300");
         DEFAULT_VALUES.put(Constants.APICP_RUNTIME_CAPACITY_VALUE,"500000");
         DEFAULT_VALUES.put(Constants.APICP_RUNTIME_CAPACITY_UNIT,"PER_YEAR");
-        DEFAULT_VALUES.put(Constants.APICP_RUNTIME_TYPE,"azure");
         DEFAULT_VALUES.put(Constants.APICP_LOG_LEVEL,"INFO");
     }
 
