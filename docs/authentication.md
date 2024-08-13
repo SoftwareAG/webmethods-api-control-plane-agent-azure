@@ -7,7 +7,7 @@
 
 This section details how to assign a Service principle for API Management service.
 
-The agent implementation for Azure API Gateway supports various implementations of **AzureAuthentication** interface provided by **AWS SDK**. 
+The agent implementation for Azure API Gateway supports various implementations of **AzureAuthentication** interface provided by **Azure SDK**. 
 
 Ensure that you have created an Service principle in Azure with the following roles assigned:
 
