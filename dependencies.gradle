@@ -88,7 +88,7 @@ ext {
     jakartaJavax = [
             'jakarta.validation:jakarta.validation-api:3.1.0',
             'jakarta.el:jakarta.el-api:6.0.1',
-            'javax.el:javax-el-api:3.0.0',
+            'javax.el:javax.el-api:3.0.0',
             'org.glassfish.web:javax.el:2.2.6',
     ]
 
@@ -147,7 +147,6 @@ ext {
             "org.slf4j:slf4j-api:2.0.13",
             "org.apache.logging.log4j:log4j-core:$log4jVersion",
             "org.apache.logging.log4j:log4j-api:$log4jVersion",
-            "org.apache.logging.log4j:log4j-slf4j2-impl:$log4jVersion",
     ]
 
     micrometer = [
