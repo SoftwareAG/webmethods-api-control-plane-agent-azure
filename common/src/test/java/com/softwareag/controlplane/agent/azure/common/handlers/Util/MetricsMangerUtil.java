@@ -1,3 +1,6 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure.common.handlers.Util;
 
 import com.azure.resourcemanager.apimanagement.models.ApiContract;

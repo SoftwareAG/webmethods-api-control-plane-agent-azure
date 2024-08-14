@@ -1,3 +1,6 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure.functions.utils;
 
 import com.azure.core.management.AzureEnvironment;

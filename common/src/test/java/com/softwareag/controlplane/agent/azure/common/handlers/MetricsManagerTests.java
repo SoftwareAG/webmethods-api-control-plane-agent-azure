@@ -1,3 +1,6 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure.common.handlers;
 
 import com.azure.core.http.rest.PagedIterable;
@@ -15,6 +18,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.mockito.*;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.List;
 
@@ -46,14 +51,14 @@ public class MetricsManagerTests {
 
 
     @Test
-    public void metricsRetrieverByDataTest(){
-        List<Metrics> metrics;
+    public void metricsRetrieverByDataTest() {
+        Metrics metrics;
 
-        RequestReportRecordContract requestReportRecordContract1 = MetricsMangerUtil.requestReportRecordContract("api-id-1",2.0,1.0,200,"200");
-        RequestReportRecordContract requestReportRecordContract2 = MetricsMangerUtil.requestReportRecordContract("api-id-2",4.0,2.0,500,"500");
-        ApiContract apiContract = MetricsMangerUtil.apiContract(ApiType.SOAP,"/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/a1","hello-api","Hello API","c48f96c9-1385-4e2d-b410-5ab591ce0fc4",true,"This is hello world description");
+        RequestReportRecordContract requestReportRecordContract1 = MetricsMangerUtil.requestReportRecordContract("api-id-1", 2.0, 1.0, 200, "200");
+        RequestReportRecordContract requestReportRecordContract2 = MetricsMangerUtil.requestReportRecordContract("api-id-2", 4.0, 2.0, 500, "500");
+        ApiContract apiContract = MetricsMangerUtil.apiContract(ApiType.SOAP, "/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/a1", "hello-api", "Hello API", "c48f96c9-1385-4e2d-b410-5ab591ce0fc4", true, "This is hello world description");
 
-        List<RequestReportRecordContract> mockedResponse= List.of(requestReportRecordContract1,requestReportRecordContract2);
+        List<RequestReportRecordContract> mockedResponse = List.of(requestReportRecordContract1, requestReportRecordContract2);
 
         PagedIterable<RequestReportRecordContract> pagedIterableMock = mock(PagedIterable.class);
         doAnswer(new Answer<Void>() {
@@ -66,16 +71,63 @@ public class MetricsManagerTests {
 
         when(azureManagersHolder.getAzureApiManager()).thenReturn(mock(ApiManagementManager.class));
         when(azureManagersHolder.getAzureApiManager().reports()).thenReturn(mock(Reports.class));
-        when(azureManagersHolder.getAzureApiManager().reports().listByRequest(any(),any(),any())).thenReturn(pagedIterableMock);
-        when(azureManagersHolder.getAzureApiManager().reports().listByRequest(any(),any(),any()).stream()).thenReturn(mockedResponse.stream());
+        when(azureManagersHolder.getAzureApiManager().reports().listByRequest(any(), any(), any())).thenReturn(pagedIterableMock);
+        when(azureManagersHolder.getAzureApiManager().reports().listByRequest(any(), any(), any()).stream()).thenReturn(mockedResponse.stream());
         when(azureManagersHolder.getAzureApiManager().apis()).thenReturn(mock(Apis.class));
-        when(azureManagersHolder.getAzureApiManager().apis().get(any(),any(),any())).thenReturn(apiContract);
+        when(azureManagersHolder.getAzureApiManager().apis().get(any(), any(), any())).thenReturn(apiContract);
 
-        metrics=metricsManager.metricsRetrieverByRequests(1717561359658L,1717561359659L,15);
 
-        float averageBackendLatency = (float) ((requestReportRecordContract1.serviceTime()+requestReportRecordContract2.serviceTime())/2);
-        float averageTotalLatency = (float) ((requestReportRecordContract1.apiTime()+requestReportRecordContract2.apiTime())/2);
-        float averageGatewayLatency = averageTotalLatency-averageBackendLatency;
+
+        metrics = metricsManager.metricsRetrieverByRequests(1717561359658L, 1717561359659L, 15);
+
+        float averageBackendLatency = (float) ((requestReportRecordContract1.serviceTime() + requestReportRecordContract2.serviceTime()) / 2);
+        float averageTotalLatency = (float) ((requestReportRecordContract1.apiTime() + requestReportRecordContract2.apiTime()) / 2);
+        float averageGatewayLatency = averageTotalLatency - averageBackendLatency;
+
+        assertEquals("12323-3454-34874_arajgw_-1", metrics.getApiTransactionMetricsList().get(0).getApiId());
+        assertEquals(1, metrics.getApiTransactionMetricsList().get(0).getMetricsByStatusCode().get("2xx").getTransactionCount());
+        assertEquals(1, metrics.getApiTransactionMetricsList().get(1).getMetricsByStatusCode().get("5xx").getTransactionCount());
+        assertEquals(metrics.getApiTransactionMetricsList().get(0).getApiMetrics().getAverageBackendLatency(),requestReportRecordContract1.serviceTime().floatValue());
+        assertEquals(averageBackendLatency,metrics.getRuntimeTransactionMetrics().getApiMetrics().getAverageBackendLatency());
+        assertEquals(averageTotalLatency,metrics.getRuntimeTransactionMetrics().getApiMetrics().getAverageTotalLatency());
+        assertEquals(averageGatewayLatency,metrics.getRuntimeTransactionMetrics().getApiMetrics().getAverageGatewayLatency());
+
+    }
+
+
+    @Test
+    public void metricsTypeHandler() {
+        List<Metrics> metrics = new ArrayList<>();
+
+        RequestReportRecordContract requestReportRecordContract1 = MetricsMangerUtil.requestReportRecordContract("api-id-1", 2.0, 1.0, 200, "200");
+        RequestReportRecordContract requestReportRecordContract2 = MetricsMangerUtil.requestReportRecordContract("api-id-2", 4.0, 2.0, 500, "500");
+        ApiContract apiContract = MetricsMangerUtil.apiContract(ApiType.SOAP, "/subscriptions/subid/resourceGroups/rg1/providers/Microsoft.ApiManagement/service/apimService1/apis/a1", "hello-api", "Hello API", "c48f96c9-1385-4e2d-b410-5ab591ce0fc4", true, "This is hello world description");
+
+        List<RequestReportRecordContract> mockedResponse = List.of(requestReportRecordContract1, requestReportRecordContract2);
+
+        PagedIterable<RequestReportRecordContract> pagedIterableMock = mock(PagedIterable.class);
+        doAnswer(new Answer<Void>() {
+            public Void answer(InvocationOnMock invocation) {
+                Consumer<RequestReportRecordContract> consumer = invocation.getArgument(0);
+                mockedResponse.forEach(consumer);
+                return null;
+            }
+        }).when(pagedIterableMock).forEach(any());
+
+        when(azureManagersHolder.getAzureApiManager()).thenReturn(mock(ApiManagementManager.class));
+        when(azureManagersHolder.getAzureApiManager().reports()).thenReturn(mock(Reports.class));
+        when(azureManagersHolder.getAzureApiManager().reports().listByRequest(any(), any(), any())).thenReturn(pagedIterableMock);
+        when(azureManagersHolder.getAzureApiManager().reports().listByRequest(any(), any(), any()).stream()).thenReturn(mockedResponse.stream());
+        when(azureManagersHolder.getAzureApiManager().apis()).thenReturn(mock(Apis.class));
+        when(azureManagersHolder.getAzureApiManager().apis().get(any(), any(), any())).thenReturn(apiContract);
+
+
+
+         metrics=metricsManager.metricsTypeHandler(1717560459000L, 1717561359000L, 900,15,"requests");
+
+        float averageBackendLatency = (float) ((requestReportRecordContract1.serviceTime() + requestReportRecordContract2.serviceTime()) / 2);
+        float averageTotalLatency = (float) ((requestReportRecordContract1.apiTime() + requestReportRecordContract2.apiTime()) / 2);
+        float averageGatewayLatency = averageTotalLatency - averageBackendLatency;
 
         assertEquals("12323-3454-34874_arajgw_-1", metrics.get(0).getApiTransactionMetricsList().get(0).getApiId());
         assertEquals(1, metrics.get(0).getApiTransactionMetricsList().get(0).getMetricsByStatusCode().get("2xx").getTransactionCount());
@@ -84,11 +136,13 @@ public class MetricsManagerTests {
         assertEquals(averageBackendLatency,metrics.get(0).getRuntimeTransactionMetrics().getApiMetrics().getAverageBackendLatency());
         assertEquals(averageTotalLatency,metrics.get(0).getRuntimeTransactionMetrics().getApiMetrics().getAverageTotalLatency());
         assertEquals(averageGatewayLatency,metrics.get(0).getRuntimeTransactionMetrics().getApiMetrics().getAverageGatewayLatency());
+
     }
+
 
     @Test
     public void metricsRetrieverByDataTestMultipleTransaction(){
-        List<Metrics> metrics;
+        Metrics metrics;
 
         //mock for the same api-id id
         RequestReportRecordContract requestReportRecordContract1 = MetricsMangerUtil.requestReportRecordContract("api-id-1",2.0,1.0,200,"200");
@@ -124,17 +178,17 @@ public class MetricsManagerTests {
         float averageTotalLatency = (float) ((requestReportRecordContract1.apiTime()+requestReportRecordContract2.apiTime()+requestReportRecordContract3.apiTime()+requestReportRecordContract4.apiTime()+requestReportRecordContract5.apiTime())/5);
         float apiAverageBackendLatency = ((requestReportRecordContract1.serviceTime().floatValue()+requestReportRecordContract3.serviceTime().floatValue()+requestReportRecordContract4.serviceTime().floatValue()+requestReportRecordContract5.serviceTime().floatValue())/4);
 
-        assertEquals("12323-3454-34874_arajgw_-1", metrics.get(0).getApiTransactionMetricsList().get(0).getApiId());
-        assertEquals(2, metrics.get(0).getApiTransactionMetricsList().get(0).getMetricsByStatusCode().get("4xx").getTransactionCount());
-        assertEquals(1, metrics.get(0).getApiTransactionMetricsList().get(1).getMetricsByStatusCode().get("5xx").getTransactionCount());
-        assertEquals(apiAverageBackendLatency,metrics.get(0).getApiTransactionMetricsList().get(0).getApiMetrics().getAverageBackendLatency());
-        assertEquals(averageBackendLatency,metrics.get(0).getRuntimeTransactionMetrics().getApiMetrics().getAverageBackendLatency());
-        assertEquals(averageTotalLatency,metrics.get(0).getRuntimeTransactionMetrics().getApiMetrics().getAverageTotalLatency());
+        assertEquals("12323-3454-34874_arajgw_-1", metrics.getApiTransactionMetricsList().get(0).getApiId());
+        assertEquals(2, metrics.getApiTransactionMetricsList().get(0).getMetricsByStatusCode().get("4xx").getTransactionCount());
+        assertEquals(1, metrics.getApiTransactionMetricsList().get(1).getMetricsByStatusCode().get("5xx").getTransactionCount());
+        assertEquals(apiAverageBackendLatency,metrics.getApiTransactionMetricsList().get(0).getApiMetrics().getAverageBackendLatency());
+        assertEquals(averageBackendLatency,metrics.getRuntimeTransactionMetrics().getApiMetrics().getAverageBackendLatency());
+        assertEquals(averageTotalLatency,metrics.getRuntimeTransactionMetrics().getApiMetrics().getAverageTotalLatency());
    }
 
     @Test
     public void metricsRetrieverByStatisticsTest(){
-        List<Metrics> metrics;
+        Metrics metrics;
 
         //mock for metricsByApi
         ReportRecordContract reportRecordContract1 = MetricsMangerUtil.reportRecordContract("api-Id-1",3,2.0,1.0);
@@ -177,15 +231,15 @@ public class MetricsManagerTests {
         }).when(pagedIterableMockByTime).forEach(any());
 
 
-        metrics=metricsManager.metricsRetrieverByInsights(1717561359658L,1717561359659L,15,15);
+        metrics=metricsManager.metricsRetrieverByInsights(1717560459659L,1717561359659L,15,15);
 
-        assertEquals("12323-3454-34874_arajgw_-1", metrics.get(0).getApiTransactionMetricsList().get(0).getApiId());
+        assertEquals("12323-3454-34874_arajgw_-1", metrics.getApiTransactionMetricsList().get(0).getApiId());
         float averageGatewayLatency= (float) (reportRecordContract1.apiTimeAvg() -reportRecordContract1.serviceTimeAvg());
-        assertEquals(averageGatewayLatency,metrics.get(0).getApiTransactionMetricsList().get(0).getApiMetrics().getAverageGatewayLatency());
-        assertEquals(reportRecordContract1.serviceTimeAvg().floatValue(),metrics.get(0).getApiTransactionMetricsList().get(0).getApiMetrics().getAverageBackendLatency());
-        assertEquals(reportRecordContract3.apiTimeAvg().floatValue(),metrics.get(0).getRuntimeTransactionMetrics().getApiMetrics().getAverageTotalLatency());
-        assertTrue(metrics.get(0).getApiTransactionMetricsList().get(0).getMetricsByStatusCode().isEmpty());
-        assertTrue(metrics.get(0).getRuntimeTransactionMetrics().getMetricsByStatusCode().isEmpty());
+        assertEquals(averageGatewayLatency,metrics.getApiTransactionMetricsList().get(0).getApiMetrics().getAverageGatewayLatency());
+        assertEquals(reportRecordContract1.serviceTimeAvg().floatValue(),metrics.getApiTransactionMetricsList().get(0).getApiMetrics().getAverageBackendLatency());
+        assertEquals(reportRecordContract3.apiTimeAvg().floatValue(),metrics.getRuntimeTransactionMetrics().getApiMetrics().getAverageTotalLatency());
+        assertTrue(metrics.getApiTransactionMetricsList().get(0).getMetricsByStatusCode().isEmpty());
+        assertTrue(metrics.getRuntimeTransactionMetrics().getMetricsByStatusCode().isEmpty());
     }
 
     @AfterEach
@@ -200,7 +254,6 @@ public class MetricsManagerTests {
 
     @AfterAll
     public void teardown() {
-
         Mockito.reset(azureManagersHolder);
         clearAllCaches();
 

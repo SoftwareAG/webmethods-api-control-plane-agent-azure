@@ -1,3 +1,6 @@
+/**
+* Copyright Super iPaaS Integration LLC, an IBM Company 2024
+*/
 package com.softwareag.controlplane.agent.azure.common.handlers.assets;
 
 
@@ -6,6 +9,7 @@ import com.azure.resourcemanager.apimanagement.models.OperationContract;
 import com.azure.resourcemanager.apimanagement.models.PolicyCollection;
 import com.softwareag.controlplane.agent.azure.common.constants.Constants;
 import com.softwareag.controlplane.agent.azure.common.context.AzureManagersHolder;
+import com.softwareag.controlplane.agentsdk.core.log.DefaultAgentLogger;
 import org.apache.commons.lang3.ObjectUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -26,10 +30,13 @@ public class PolicyRetriever {
     private String apiManagementServiceName;
     private static PolicyRetriever policyRetriever;
 
+    private DefaultAgentLogger logger;
+
     private PolicyRetriever(String resourceGroup, String apiManagementServiceName) {
         this.resourceGroup = resourceGroup;
         this.apiManagementServiceName = apiManagementServiceName;
         this.azureManagersHolder = AzureManagersHolder.getInstance();
+        this.logger = DefaultAgentLogger.getInstance(this.getClass());
     }
 
     /**
@@ -69,21 +76,27 @@ public class PolicyRetriever {
      * @return the total count of API policies and API Operation policies
      */
     public int getPoliciesCount(String apiId)  {
-        int apiOperationPolicyCount=0;
-        // Retrieves each method within the specified API, such as GET, PUT, etc.
-        PagedIterable<OperationContract> apiOperations = azureManagersHolder.getAzureApiManager().apiOperations().listByApi(this.resourceGroup, this.apiManagementServiceName, apiId);
-        //Retrieves Policy collection of given API.
-        PolicyCollection apiPolicies = azureManagersHolder.getAzureApiManager().apiPolicies().listByApi(this.resourceGroup,this.apiManagementServiceName,apiId);
-        int apiPolicyCount = parsePolicies(apiPolicies);
+        try {
+            int apiOperationPolicyCount=0;
+            // Retrieves each method within the specified API, such as GET, PUT, etc
+            PagedIterable<OperationContract> apiOperations = azureManagersHolder.getAzureApiManager().apiOperations().listByApi(this.resourceGroup, this.apiManagementServiceName, apiId);
+            //Retrieves Policy collection of given API.
+            PolicyCollection apiPolicies = azureManagersHolder.getAzureApiManager().apiPolicies().listByApi(this.resourceGroup,this.apiManagementServiceName,apiId);
+            int apiPolicyCount = parsePolicies(apiPolicies);
 
-        // Iterates through each method within the API to calculate the policy count for each one.
-        if(ObjectUtils.isNotEmpty(apiOperations)) {
-            for (OperationContract operation : apiOperations) {
-                PolicyCollection apiOperationPolicies = azureManagersHolder.getAzureApiManager().apiOperationPolicies().listByOperation(this.resourceGroup, this.apiManagementServiceName, apiId, operation.name());
-                apiOperationPolicyCount += parsePolicies(apiOperationPolicies);
+            // Iterates through each method within the API to calculate the policy count for each one.
+            if(ObjectUtils.isNotEmpty(apiOperations)) {
+                for (OperationContract operation : apiOperations) {
+                    PolicyCollection apiOperationPolicies = azureManagersHolder.getAzureApiManager().apiOperationPolicies().listByOperation(this.resourceGroup, this.apiManagementServiceName, apiId, operation.name());
+                    apiOperationPolicyCount += parsePolicies(apiOperationPolicies);
+                }
             }
+            return apiPolicyCount + apiOperationPolicyCount;
         }
-        return apiPolicyCount + apiOperationPolicyCount;
+        catch (Exception e){
+            logger.info("Exception occured during API Operation retrieval");
+            return 0;
+        }
     }
 
     private int parsePolicies(PolicyCollection policies) {

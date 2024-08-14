@@ -1,3 +1,6 @@
+<!--
+  Copyright Super iPaaS Integration LLC, an IBM Company 2024
+-->
 ## Core Implementation Logic 
 Let’s understand the logic of how the agent for Azure API Management Service is implemented for different use cases.
 
