@@ -3,6 +3,7 @@
 */
 package com.softwareag.controlplane.agent.azure.common.handlers.metrics;
 
+import com.azure.core.exception.ResourceNotFoundException;
 import com.azure.core.http.rest.PagedIterable;
 import com.azure.resourcemanager.apimanagement.models.ApiContract;
 import com.azure.resourcemanager.apimanagement.models.ReportRecordContract;
@@ -24,7 +25,7 @@ import java.util.HashMap;
 /**
  * The  Metrics manager is to query Metrics from azure and sent to API Control Plane.
  */
-public class MetricsManager {
+public final class MetricsManager {
 
     private static MetricsManager metricsManager;
     private AzureManagersHolder azureManagersHolder;
@@ -227,7 +228,7 @@ public class MetricsManager {
                             .metricsByStatusCode(metricsByStatusCode)
                             .build();
                     apiTransMetricsList.add(apiTransMetrics);
-                }catch(Exception e){
+                }catch(ResourceNotFoundException e){
                     logger.info("Exception occurred during API transaction retrieval");
                 }
 
@@ -267,7 +268,7 @@ public class MetricsManager {
                             .build();
                     apiTransMetricsList.add(apiTransMetrics);
                 }
-                catch (Exception e){
+                catch (ResourceNotFoundException e){
                    logger.info("Exception occurred during API transaction retrieval");
                 }
             }

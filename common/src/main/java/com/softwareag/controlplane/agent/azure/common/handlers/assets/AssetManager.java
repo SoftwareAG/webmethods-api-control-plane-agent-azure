@@ -27,13 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * The Asset manager is to query API from Azure and sent to API Control plane
  */
-public class AssetManager {
+public final class AssetManager {
 
     private AzureManagersHolder azureManagersHolder;
     private PolicyRetriever policyRetriever;
@@ -129,7 +130,7 @@ public class AssetManager {
                 subscriptionId, this.apiManagementServiceName);
 
         // Azure apiType has values such as SOAP, GRAPHQL , for REST values left to be empty
-        String azureAPIType = azureAPI.apiType() == null ? "REST" : azureAPI.apiType().toString().toUpperCase();
+        String azureAPIType = azureAPI.apiType() == null ? "REST" : azureAPI.apiType().toString().toUpperCase(Locale.ENGLISH);
         if (validAPICreation(azureAPI, azureAPIType)) {
             String versionSetId = azureAPI.apiVersionSetId() != null ?
                     azureAPI.apiVersionSetId() : null;
