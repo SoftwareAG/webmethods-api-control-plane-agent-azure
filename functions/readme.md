@@ -28,7 +28,9 @@ Ensure that you have:
 -	An active Azure account with API Management service subscription.
 -	Verified if Azure API Management service and API Control Plane for which you want to establish connectivity using the agent are up and running.
 -	Created the Runtime Type in API Control Plane to represent Azure API Management Service. For details, see [Runtime Type Management REST API](https://github.com/SoftwareAG/webmethods-api-control-plane/blob/main/apis/openapi-specifications/runtime-type.yaml).
--	Assigned the *Service principle* with **Website Contributor role** for your Azure API Management Service. For details about the Service principles, see [Azure documentation]( https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-use-managed-service-identity).
+-	Assigned the *Website Contributor* role at the **subscription level**. For details about assigning roles,  see [Azure documentation](https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal). The documentation explains how to assign the role at the Resource group level. Follow the steps and assign the *Website Contributor* role at the *subscription level*. 
+-	Assigned the *Service principle* to your Azure API Management Service and the *client ID* and *client secret* is generated. The generated credentials must be added to the following Environment variables, AZURE_CLIENT_ID,  AZURE_CLIENT_SECRET.<br> 
+    To assign the *Service principle*, use the *Azure portal* or *Azure CLI*. For details, see [Using Azure Portal](https://learn.microsoft.com/en-us/entra/identity-platform/howto-create-service-principal-portal), [Using Azure CLI](https://learn.microsoft.com/en-us/cli/azure/azure-cli-sp-tutorial-1?tabs=bash).
 
 For **Azure CLI**, ensure that you have installed
 -	Microsoft Azure CLI, latest version. For details, see [Azure Command-Line Interface (CLI)](https://learn.microsoft.com/en-us/cli/azure/).
@@ -240,6 +242,8 @@ e) Select **Microsoft.EventGrid** from the dropdown.
 f) Enable **Microsoft.EventGrid** and click **Register**.<br><br><br>
 	
 #### Step 5: Configure the Event subscription in your Azure API Management Service.
+
+**Note**:  Ensure that the *system-assigned identity* is assigned to your *API Management service*. For details, see [Azure documentation](https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-use-managed-service-identity). 
 
 *This step is common for creating and deploying Java Function in Azure using Azure CLI and Visual Studio Code editor.*
 

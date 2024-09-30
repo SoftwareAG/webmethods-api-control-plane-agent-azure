@@ -18,7 +18,11 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SDKConfigUtil {
+public final class SDKConfigUtil {
+
+    private SDKConfigUtil() {
+
+    }
 
     public static ControlPlaneConfig controlPlaneConfig(AgentProperties agentProperties){
         TlsConfig tlsConfig = new TlsConfig

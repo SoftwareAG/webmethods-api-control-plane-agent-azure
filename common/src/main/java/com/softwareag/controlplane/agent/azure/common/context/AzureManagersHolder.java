@@ -13,7 +13,7 @@ import com.softwareag.controlplane.agentsdk.api.client.ControlPlaneClient;
 /**
  * The Azure managers holder holds instantiates the azure managers holder.
  */
-public class AzureManagersHolder {
+public final class AzureManagersHolder {
 
     private static AzureManagersHolder azureManagersHolder;
     private AzureManagersHolder(){

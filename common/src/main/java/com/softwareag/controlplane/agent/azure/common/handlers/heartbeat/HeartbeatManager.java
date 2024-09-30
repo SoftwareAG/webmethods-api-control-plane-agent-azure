@@ -14,7 +14,7 @@ import java.util.Date;
 /**
  * The Heartbeat manager to generate heartbeat for Control Plane.
  */
-public class HeartbeatManager {
+public final class HeartbeatManager {
     private static HeartbeatManager heartbeatManager;
 
     private AzureManagersHolder azureManagersHolder;

@@ -44,8 +44,6 @@ public class AzureAgentUtilTests {
 
     @Test
     void getOwnerInfoTest() {
-        AzureAgentUtil azureAgentUtil = new AzureAgentUtil();
-        assertNotNull(azureAgentUtil);
         Owner owner = AzureAgentUtil.getOwnerInfo(null);
         assertNotNull(owner);
         assertNull(owner.getName());

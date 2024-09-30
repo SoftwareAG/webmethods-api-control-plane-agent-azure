@@ -18,7 +18,12 @@ import java.util.Set;
 /**
  * The class Azure agent util has the methods for re-usability.
  */
-public class AzureAgentUtil {
+public final class AzureAgentUtil {
+
+    private AzureAgentUtil() {
+
+    }
+
     /**
      * Convert tags set.
      *
